@@ -1,0 +1,106 @@
+const JWT = require("jsonwebtoken");
+const createError = require("http-errors");
+const client = require("./init_redis");
+
+module.exports = {
+  signAccessToken: (userId, isAdmin = false) => {
+    return new Promise((resolve, reject) => {
+      const payload = {
+        isAdmin: isAdmin,
+      };
+      const secret = process.env.ACCESS_TOKEN_SECRET;
+      const options = {
+        expiresIn: "1h",
+        issuer: "practice.domain.com",
+        audience: userId,
+      };
+      JWT.sign(payload, secret, options, (err, token) => {
+        if (err) {
+          console.log(err.message);
+          return reject(createError.InternalServerError());
+        }
+        resolve(token);
+      });
+    });
+  },
+  verifyAccessToken: (req, res, next) => {
+    if (!req.headers["authorization"]) return next(createError.Unauthorized());
+    const authHeader = req.headers["authorization"];
+    const bearerToken = authHeader.split(" ");
+    const token = bearerToken[1];
+    JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
+      if (err) {
+        const message = err.name === "JsonWebTokenError" ? "Unauthorized" : err.message;
+        return next(createError.Unauthorized(message));
+      }
+      req.payload = payload;
+      next();
+    });
+  },
+  signRefreshToken: (userId, isAdmin = false) => {
+    return new Promise((resolve, reject) => {
+      const payload = {
+        isAdmin: isAdmin,
+      };
+      const secret = process.env.REFRESH_TOKEN_SECRET;
+      const options = {
+        expiresIn: "1y",
+        issuer: "practice.domain.com",
+        audience: userId,
+      };
+      JWT.sign(payload, secret, options, (err, token) => {
+        if (err) {
+          console.log(err.message);
+          return reject(createError.InternalServerError());
+        }
+        (async () => {
+          try {
+            await client.SET(userId, token, "EX", 365 * 24 * 60 * 60, (err, reply) => {
+              if (err) {
+                console.log(err);
+                reject(createError.InternalServerError());
+                return;
+              }
+              console.log(reply);
+            });
+          } catch (err) {
+            console.error(err);
+            reject(createError.InternalServerError());
+            return;
+          }
+        })();
+        resolve(token);
+      });
+    });
+  },
+  verifyRefreshToken: (refreshToken) => {
+    return new Promise((resolve, reject) => {
+      JWT.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, payload) => {
+        if (err) return reject(createError.Unauthorized());
+        const userId = payload.aud;
+        const userIsAdmin = payload.isAdmin;
+        try {
+          client.GET(userId, (err, result) => {
+            if (err) {
+              // console.log(err.message);
+              reject(createError.InternalServerError());
+              return;
+            }
+            console.log("!!!!!!!!!!!!!!!!!");
+            console.log(refreshToken);
+            console.log(result);
+            console.log(userIsAdmin);
+            if (refreshToken === result) {
+              resolve({ userId, userIsAdmin });
+            } else {
+              reject(createError.Unauthorized());
+            }
+          });
+        } catch (err) {
+          console.error(err);
+          reject(createError.InternalServerError());
+        }
+      });
+    });
+  },
+};

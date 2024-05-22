@@ -1,0 +1,67 @@
+GET http://localhost:3000/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MTU0NDg3OTcsImV4cCI6MTcxNTQ0ODgxMiwiYXVkIjoiNjYzZmE5YWE5OTMwYjIyN2RiZWFiYTA2IiwiaXNzIjoicHJhY3RpY2UuZG9tYWluLmNvbSJ9.Hf1gFaK9GxqI5ouwFPuibo-bIqmmqJCBbfnaBLppMDI
+
+
+### Login Route
+POST http://localhost:3000/auth/login
+Content-Type: application/json 
+
+{
+    "email": "123@123.com",
+    "password": "password"
+
+}
+
+### Register Route
+POST http://localhost:3000/auth/register
+Content-Type: application/json 
+
+{
+    "email": "123@123.com",
+    "password": "password"
+}
+
+### Refresh Token Route
+POST http://localhost:3000/auth/refresh_token
+Content-Type: application/json 
+
+{
+    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjpmYWxzZSwiaWF0IjoxNzE1NzAyODc1LCJleHAiOjE3NDcyNjA0NzUsImF1ZCI6IjY2NDM3OGM2YTg0ZTU0NjhiNGVkMWI5YyIsImlzcyI6InByYWN0aWNlLmRvbWFpbi5jb20ifQ.YfjuaDtoiRwraMRV1FZmHzoBIeYFfwRUzpgRNXEqAqA"
+}
+
+### Logout Route
+DELETE http://localhost:3000/auth/logout
+Content-Type: application/json 
+
+{
+    "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjpmYWxzZSwiaWF0IjoxNzE1NzAyMjM0LCJleHAiOjE3NDcyNTk4MzQsImF1ZCI6IjY2NDM3OGM2YTg0ZTU0NjhiNGVkMWI5YyIsImlzcyI6InByYWN0aWNlLmRvbWFpbi5jb20ifQ.sq5ZPQ_0xsnrU-0PZakZta0kH2Q5ZKLiRvEJ-IVYBZQ"
+}
+
+
+
+
+
+
+
+
+
+
+### Get Posts
+GET http://localhost:3000/post/
+Content-Type: application/json
+
+{
+    "title": "Test",
+    "content": "Test",
+    "userId": "663d0b24a54cdc652871e966"
+}
+
+### Post New Posts
+POST http://localhost:3000/post/
+Content-Type: application/json
+
+{
+    "title": "Test",
+    "content": "Test",
+     "userId": "663d0b24a54cdc652871e966"
+}
