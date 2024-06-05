@@ -5,7 +5,22 @@ require("dotenv").config();
 require("./helpers/init_mongodb");
 const { verifyAccessToken } = require("./helpers/jwt");
 const client = require("./helpers/init_redis");
+const cors = require("cors");
+const { createClient } = require("@supabase/supabase-js");
 
+const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
+
+async function uploadFile(file) {
+  const { data, error } = await supabase.storage.from("imgstorage").upload("censor.jpg", file);
+  if (error) {
+    console.log("ERROR HAPPENED CHIRP");
+    console.log(error);
+  } else {
+    // Handle success
+    console.log("HANDLING NOW CHIRP");
+  }
+}
+console.log("STARTING SERVER CHRIP");
 // Set "foo" to "bar"
 // (async () => {
 //   try {
@@ -20,20 +35,20 @@ const client = require("./helpers/init_redis");
 console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");
 const PostRoute = require("./routes/Post_public.route");
+const SolutionsRoute = require("./routes/Solutions.route");
 
 const app = express();
 app.use(morgan("dev"));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", verifyAccessToken, async (req, res, next) => {
-  console.log("AAAA req.payload");
-  console.log(req.payload);
-  console.log("AAAA req.payload!!!!!!");
   res.send("Express get");
 });
 app.use("/auth", AuthRoute);
 app.use("/post", PostRoute);
+app.use("/solutions", SolutionsRoute);
 app.use(async (req, res, next) => {
   // const error = new Error('Not found');
   // error.status = 404;

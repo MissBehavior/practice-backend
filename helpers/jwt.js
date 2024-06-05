@@ -3,10 +3,11 @@ const createError = require("http-errors");
 const client = require("./init_redis");
 
 module.exports = {
-  signAccessToken: (userId, isAdmin = false) => {
+  signAccessToken: (name, userId, isAdmin = false) => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
+        name: name,
       };
       const secret = process.env.ACCESS_TOKEN_SECRET;
       const options = {
@@ -37,10 +38,11 @@ module.exports = {
       next();
     });
   },
-  signRefreshToken: (userId, isAdmin = false) => {
+  signRefreshToken: (name, userId, isAdmin = false) => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
+        name: name,
       };
       const secret = process.env.REFRESH_TOKEN_SECRET;
       const options = {

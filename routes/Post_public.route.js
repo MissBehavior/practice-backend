@@ -2,21 +2,33 @@ const express = require("express");
 const router = express.Router();
 const createError = require("http-errors");
 const Post = require("../Models/Post_public.model");
+const User = require("../Models/User.model");
 const { verifyAccessToken } = require("../helpers/jwt");
 
 router.get("/", async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  const startIndex = (page - 1) * limit;
+  const total = await Post.countDocuments();
+  console.log(total);
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().skip(startIndex).limit(limit);
     console.log(
       posts.forEach((post) => {
-        console.log(post.title);
-        console.log(post.id);
-        console.log(post.createdAt);
-        console.log(post.updatedAt);
-        console.log(post.content);
+        // console.log(post.title);
+        // console.log(post.id);
+        // console.log(post.content);
+        // console.log(post.userId);
+        // console.log(post.userName);
+        // console.log("-----")
       })
     );
-    res.send(posts);
+    res.json({
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      posts,
+    });
   } catch (error) {
     next(error);
   }
@@ -32,6 +44,8 @@ router.post("/", verifyAccessToken, async (req, res, next) => {
     const savedPost = await post.save();
     res.send(savedPost);
   } catch (error) {
+    console.log(" post new post error");
+    console.log(error);
     next(error);
   }
 });

@@ -7,7 +7,12 @@ const PostSchema = new Schema(
     content: { type: String, required: true },
     postPicture: { type: String, required: false, default: "" },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.String,
+      ref: "user",
+      required: true,
+    },
+    userName: {
+      type: mongoose.Schema.Types.String,
       ref: "user",
       required: true,
     },
@@ -24,7 +29,7 @@ PostSchema.pre("save", async function (next) {
 });
 PostSchema.post("save", async function (error, doc, next) {
   if (error.name === "MongoError" && error.code === 11000) {
-    next(new Error("Email already exists"));
+    next(new Error("Error "));
   } else {
     next(error);
   }

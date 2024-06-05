@@ -1,3 +1,4 @@
+
 GET http://localhost:3000/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MTU0NDg3OTcsImV4cCI6MTcxNTQ0ODgxMiwiYXVkIjoiNjYzZmE5YWE5OTMwYjIyN2RiZWFiYTA2IiwiaXNzIjoicHJhY3RpY2UuZG9tYWluLmNvbSJ9.Hf1gFaK9GxqI5ouwFPuibo-bIqmmqJCBbfnaBLppMDI
 
@@ -7,7 +8,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json 
 
 {
-    "email": "123@123.com",
+    "email": "1@1.com",
     "password": "password"
 
 }
@@ -17,7 +18,8 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json 
 
 {
-    "email": "123@123.com",
+    "name": "1@1.com",
+    "email": "1@1.com",
     "password": "password"
 }
 
@@ -51,17 +53,37 @@ GET http://localhost:3000/post/
 Content-Type: application/json
 
 {
-    "title": "Test",
-    "content": "Test",
-    "userId": "663d0b24a54cdc652871e966"
+   
 }
 
 ### Post New Posts
 POST http://localhost:3000/post/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjpmYWxzZSwibmFtZSI6IjFAMS5jb20iLCJpYXQiOjE3MTczNDE1MTUsImV4cCI6MTcxNzM0NTExNSwiYXVkIjoiNjY1Yzg4ODEyMWE3OGFjYjEyMDA4YzEyIiwiaXNzIjoicHJhY3RpY2UuZG9tYWluLmNvbSJ9.2tNrJsuWY5dwC0uxnCRjG-UPrbcGckTM8uwbFu4VZuA
 
 {
-    "title": "Test",
-    "content": "Test",
-     "userId": "663d0b24a54cdc652871e966"
+    "title": "Vickusik Kartusik NEW PAGE",
+    "content": "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet",
+    "userId": "6658a36d540c966b9d318356",
+    "userName": "1@1.com"
+}
+
+
+### GET SOLUTIONS
+GET http://localhost:3000/solutions/
+
+{
+
+}
+
+### POST SOLUTIONS
+POST http://localhost:3000/solutions/
+Content-Type: application/json
+Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVlLCJuYW1lIjoiMUAxLmNvbSIsImlhdCI6MTcxNzUxODI4NiwiZXhwIjoxNzE3NTIxODg2LCJhdWQiOiI2NjVjODg4MTIxYTc4YWNiMTIwMDhjMTIiLCJpc3MiOiJwcmFjdGljZS5kb21haW4uY29tIn0.xwqONV1T0b5-4abXESHxsr2WTkH-3TkaBGcNJtFMljY
+
+{
+    "cardImgUrl": "https://xssffzxqjglbywdaziqf.supabase.co/storage/v1/object/public/imgstorage/colibri-image-126.png",
+    "titleCard": "Vickusik Kartusik NEW PAGE 1",
+    "contentCard": "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet",
+    "contentMain" : "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet"
 }
