@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const createError = require("http-errors");
 const { verifyAccessToken } = require("../helpers/jwt");
-const Solutions = require("../Models/Solutions.model");
+const Gallery = require("../Models/Gallery.model");
 const multer = require("multer");
 const { createClient } = require("@supabase/supabase-js");
 
@@ -10,51 +10,53 @@ const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_K
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", async (req, res, next) => {
-  const total = await Solutions.countDocuments();
+  const total = await Gallery.countDocuments();
   console.log(total);
   try {
-    const solutions = await Solutions.find();
-    console.log(solutions.forEach((solution) => {}));
+    const gallery = await Gallery.find();
     res.json({
-      solutions,
+      gallery,
     });
   } catch (error) {
     next(error);
   }
 });
+
 router.get("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const solution = await Solutions.findById(id);
-    if (!solution) {
-      throw createError.NotFound(`Solution with id ${id} not found`);
+    const gallery = await Gallery.findById(id);
+    if (!gallery) {
+      throw createError.NotFound(`Gallery with id ${id} not found`);
     }
-    res.send(solution);
+    res.send(gallery);
   } catch (error) {
     next(error);
   }
 });
+
 router.post("/", verifyAccessToken, async (req, res, next) => {
   try {
-    console.log("Solution post route");
+    console.log("Gallery post route");
     console.log(req.body);
-    const solution = new Solutions(req.body);
+    const gallery = new Gallery(req.body);
     //   const user = await User.findById(post.userId);
     //   if (!user) {
     //     throw createError.NotFound("User not found");
     //   }
-    const savedSolution = await solution.save();
-    res.send(savedSolution);
+    const savedGallery = await gallery.save();
+    res.send(savedGallery);
   } catch (error) {
-    console.log(" solution new solution error");
+    console.log(" gallery new savedGallery error");
     console.log(error);
     next(error);
   }
 });
+
 router.post("/api/upload/", upload.single("image"), async (req, res) => {
   console.log("UPLOADING rest api called");
   try {
-    const { titleCard, contentCard } = req.body;
+    const { title } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -74,17 +76,15 @@ router.post("/api/upload/", upload.single("image"), async (req, res) => {
       console.log(data);
       console.log(data.path);
     }
-
     const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
     console.log(publicUrl);
-    const solution = new Solutions({
-      titleCard: titleCard,
-      contentCard: contentCard,
+    const gallery = new Gallery({
+      title: title,
       cardImgUrl: publicUrl,
       cardImgPath: data.path,
     });
-    const savedSolution = await solution.save();
-    res.send(savedSolution);
+    const savedGallery = await gallery.save();
+    res.send(savedGallery);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -100,11 +100,11 @@ router.delete("/:id", verifyAccessToken, async (req, res, next) => {
   console.log(req.body);
   try {
     const { id } = req.params;
-    const deleted = await Solutions.findByIdAndDelete(id);
+    const deleted = await Gallery.findByIdAndDelete(id);
     if (!deleted) {
-      throw createError.NotFound(`Solution with id ${id} not found`);
+      throw createError.NotFound(`Gallery with id ${id} not found`);
     }
-    console.log("DELETED SOLUTION----------");
+    console.log("DELETED Gallery----------");
     console.log(deleted);
     if (deleted.cardImgPath) {
       console.log("DELETING IMAGE");
@@ -132,7 +132,7 @@ router.patch("/:id", verifyAccessToken, upload.single("image"), async (req, res,
   try {
     const { id } = req.params;
     try {
-      const { titleCard, contentCard } = req.body;
+      const { title } = req.body;
       const file = req.file;
 
       if (!file) {
@@ -153,14 +153,13 @@ router.patch("/:id", verifyAccessToken, upload.single("image"), async (req, res,
 
       const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
       console.log(publicUrl);
-      const solution = await Solutions.findById(id);
-      solution.titleCard = titleCard;
-      solution.contentCard = contentCard;
-      solution.cardImgUrl = publicUrl;
+      const gallery = await Gallery.findById(id);
+      gallery.title = title;
+      gallery.cardImgUrl = publicUrl;
 
-      const savedSolution = await solution.save();
+      const savedGallery = await gallery.save();
 
-      res.send(savedSolution);
+      res.send(savedGallery);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error at PATCH" });

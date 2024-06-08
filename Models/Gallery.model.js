@@ -1,34 +1,32 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const SolutionsSchema = new Schema(
+const GallerySchema = new Schema(
   {
     cardImgUrl: { type: String, required: true, default: "" },
     cardImgPath: { type: String, required: true, default: "" },
-    titleCard: { type: String, required: true },
-    contentCard: { type: String, required: true },
-    contentMain: { type: String, required: false, default: "" },
+    title: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-SolutionsSchema.pre("save", async function (next) {
+GallerySchema.pre("save", async function (next) {
   try {
     next();
   } catch (error) {
     next(error);
   }
 });
-SolutionsSchema.post("save", async function (error, doc, next) {
+GallerySchema.post("save", async function (error, doc, next) {
   if (error.name === "MongoError" && error.code === 11000) {
     next(new Error("Error"));
   } else {
     next(error);
   }
 });
-const Solutions = mongoose.model("solutions", SolutionsSchema);
+const Gallery = mongoose.model("gallery", GallerySchema);
 
-module.exports = Solutions;
+module.exports = Gallery;
 
 // Public Post - > Admin
 

@@ -36,6 +36,7 @@ console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");
 const PostRoute = require("./routes/Post_public.route");
 const SolutionsRoute = require("./routes/Solutions.route");
+const GalleryRoute = require("./routes/Gallery.route");
 
 const app = express();
 app.use(morgan("dev"));
@@ -49,6 +50,7 @@ app.get("/", verifyAccessToken, async (req, res, next) => {
 app.use("/auth", AuthRoute);
 app.use("/post", PostRoute);
 app.use("/solutions", SolutionsRoute);
+app.use("/gallery", GalleryRoute);
 app.use(async (req, res, next) => {
   // const error = new Error('Not found');
   // error.status = 404;
