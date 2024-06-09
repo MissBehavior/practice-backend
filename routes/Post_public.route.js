@@ -16,7 +16,6 @@ router.get("/", async (req, res, next) => {
 
   const startIndex = (page - 1) * limit;
   const total = await Post.countDocuments();
-  console.log(total);
   try {
     const posts = await Post.find().skip(startIndex).limit(limit);
     console.log(

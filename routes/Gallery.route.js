@@ -11,7 +11,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", async (req, res, next) => {
   const total = await Gallery.countDocuments();
-  console.log(total);
   try {
     const gallery = await Gallery.find();
     res.json({

@@ -11,14 +11,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", async (req, res, next) => {
   const total = await Solutions.countDocuments();
-  console.log(total);
   try {
     const solutions = await Solutions.find();
-    console.log(solutions.forEach((solution) => {}));
+    console.log("LAST BEFORE SEND");
     res.json({
       solutions,
     });
   } catch (error) {
+    console.log("WE ARE IN ERRORS");
+    console.log(error);
     next(error);
   }
 });
