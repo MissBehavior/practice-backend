@@ -35,25 +35,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-router.post("/", verifyAccessToken, async (req, res, next) => {
-  try {
-    console.log("Gallery post route");
-    console.log(req.body);
-    const gallery = new Gallery(req.body);
-    //   const user = await User.findById(post.userId);
-    //   if (!user) {
-    //     throw createError.NotFound("User not found");
-    //   }
-    const savedGallery = await gallery.save();
-    res.send(savedGallery);
-  } catch (error) {
-    console.log(" gallery new savedGallery error");
-    console.log(error);
-    next(error);
-  }
-});
-
-router.post("/api/upload/", upload.single("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   console.log("UPLOADING rest api called");
   try {
     const { title } = req.body;
