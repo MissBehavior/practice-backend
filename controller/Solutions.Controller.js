@@ -70,7 +70,7 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  deletePostById: async (req, res, next) => {
+  deleteSolutionById: async (req, res, next) => {
     //   console.log("delete route");
     //   console.log(req);
     //   console.log(req.body);
@@ -105,7 +105,7 @@ module.exports = {
       next(error);
     }
   },
-  updatePost: async (req, res, next) => {
+  updateSolution: async (req, res, next) => {
     // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     try {
       const { id } = req.params;

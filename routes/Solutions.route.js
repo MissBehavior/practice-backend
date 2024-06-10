@@ -7,7 +7,8 @@ const SolutionsController = require("../controller/Solutions.Controller");
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", SolutionsController.getSolutions);
-router.get("/:id", SolutionsController.getSolutionById);
+
+router.get("/:id", SolutionsController.getSolutionsById);
 
 router.post("/api/upload/", upload.single("image"), SolutionsController.createSolution);
 

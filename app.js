@@ -51,6 +51,7 @@ app.use("/auth", AuthRoute);
 app.use("/post", PostRoute);
 app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);
+
 app.use(async (req, res, next) => {
   // const error = new Error('Not found');
   // error.status = 404;
