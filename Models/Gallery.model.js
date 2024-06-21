@@ -6,6 +6,12 @@ const GallerySchema = new Schema(
     cardImgUrl: { type: String, required: true, default: "" },
     cardImgPath: { type: String, required: true, default: "" },
     title: { type: String, required: true },
+    galleryImages: [
+      {
+        imgUrl: { type: String, required: false },
+        imgPath: { type: String, required: false },
+      },
+    ],
   },
   { timestamps: true }
 );

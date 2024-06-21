@@ -55,6 +55,7 @@ module.exports = {
           console.log(err.message);
           return reject(createError.InternalServerError());
         }
+
         (async () => {
           try {
             await client.SET(userId, token, "EX", 365 * 24 * 60 * 60, (err, reply) => {
@@ -71,6 +72,8 @@ module.exports = {
             return;
           }
         })();
+        console.log("refresh token set");
+
         resolve(token);
       });
     });
@@ -81,6 +84,7 @@ module.exports = {
         if (err) return reject(createError.Unauthorized());
         const userId = payload.aud;
         const userIsAdmin = payload.isAdmin;
+        const userName = payload.name;
         try {
           client.GET(userId, (err, result) => {
             if (err) {
@@ -88,12 +92,9 @@ module.exports = {
               reject(createError.InternalServerError());
               return;
             }
-            console.log("!!!!!!!!!!!!!!!!!");
-            console.log(refreshToken);
-            console.log(result);
-            console.log(userIsAdmin);
+
             if (refreshToken === result) {
-              resolve({ userId, userIsAdmin });
+              resolve({ userId, userIsAdmin, userName });
             } else {
               reject(createError.Unauthorized());
             }

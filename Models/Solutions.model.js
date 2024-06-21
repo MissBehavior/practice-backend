@@ -8,6 +8,7 @@ const SolutionsSchema = new Schema(
     titleCard: { type: String, required: true },
     contentCard: { type: String, required: true },
     contentMain: { type: String, required: false, default: "" },
+    contentMainImg: { type: String, required: false, default: "" },
   },
   { timestamps: true }
 );

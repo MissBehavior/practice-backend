@@ -87,3 +87,17 @@ Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVl
     "contentCard": "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet",
     "contentMain" : "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet"
 }
+
+### GET GALLERY
+POST http://localhost:3000/gallery/
+Content-Type: application/json
+Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVlLCJuYW1lIjoiMUAxLmNvbSIsImlhdCI6MTcxODk4Mjg3MiwiZXhwIjoxNzE4OTg2NDcyLCJhdWQiOiI2NjVjODg4MTIxYTc4YWNiMTIwMDhjMTIiLCJpc3MiOiJwcmFjdGljZS5kb21haW4uY29tIn0.DQ5Z9VTcVdFd6qEJAMJLkkgbGorTdRDwG_fvH4JTGjo
+
+{
+    "cardImgUrl": "https://xssffzxqjglbywdaziqf.supabase.co/storage/v1/object/public/imgstorage/colibri-image-126.png",
+    "cardImgPath": "imgstorage/colibri-image-126.png",
+    "title": "lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit ametlorem ipsum dolor sit amet",
+    "galleryImages" : [ "https://xssffzxqjglbywdaziqf.supabase.co/storage/v1/object/public/imgstorage/colibri-image-126.png",
+     "https://xssffzxqjglbywdaziqf.supabase.co/storage/v1/object/public/imgstorage/colibri-image-126.png"
+    ]
+}

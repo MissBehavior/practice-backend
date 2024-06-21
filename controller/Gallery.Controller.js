@@ -32,32 +32,56 @@ module.exports = {
     console.log("UPLOADING rest api called");
     try {
       const { title } = req.body;
-      const file = req.file;
+      console.log(req.files);
+      console.log("--------------------------------------");
+      console.log(req.body);
+      const mainFile = req.files.cardImgUrl[0];
+      const additionalFiles = req.files.galleryImages;
 
-      if (!file) {
-        return res.status(400).json({ error: "No file uploaded" });
+      if (!mainFile) {
+        return res.status(400).json({ error: "Main image not uploaded" });
       }
 
-      const fileName = `${Date.now()}-${file.originalname}`;
-      const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-        contentType: file.mimetype,
+      // Upload main image
+      const mainFileName = `${Date.now()}-${mainFile.originalname}`;
+      const { data: mainData, error: mainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(mainFileName, mainFile.buffer, {
+        contentType: mainFile.mimetype,
         upsert: true,
       });
-      if (error) {
-        console.log("ERROR HAPPENED CHIRP");
-        console.log(error);
-      } else {
-        console.log("HANDLING NOW CHIRP");
-        console.log(data);
-        console.log(data.path);
+      if (mainError) {
+        console.log(mainError);
+        return res.status(500).json({ error: mainError.message });
       }
-      const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-      console.log(publicUrl);
+      const mainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(mainFileName).data.publicUrl;
+
+      // Upload additional images
+      let galleryImages = [];
+      if (additionalFiles && additionalFiles.length > 0) {
+        for (const file of additionalFiles) {
+          const additionalFileName = `${Date.now()}-${file.originalname}`;
+          const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(additionalFileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true,
+          });
+          if (error) {
+            console.log(error);
+            return res.status(500).json({ error: error.message });
+          }
+          const publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(additionalFileName).data.publicUrl;
+          galleryImages.push({
+            imgUrl: publicUrl,
+            imgPath: data.path,
+          });
+        }
+      }
+
       const gallery = new Gallery({
-        title: title,
-        cardImgUrl: publicUrl,
-        cardImgPath: data.path,
+        title,
+        cardImgUrl: mainPublicUrl,
+        cardImgPath: mainData.path,
+        galleryImages,
       });
+
       const savedGallery = await gallery.save();
       res.send(savedGallery);
     } catch (error) {
@@ -66,10 +90,6 @@ module.exports = {
     }
   },
   deleteGallery: async (req, res, next) => {
-    //   console.log("delete route");
-    //   console.log(req);
-    //   console.log(req.body);
-    //   console.log(req.params);
     // TODO: DELETE IMAGE ON SUPRABASE AS WELL
     console.log(req.body);
     try {
@@ -104,41 +124,74 @@ module.exports = {
     // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     try {
       const { id } = req.params;
-      try {
-        const { title } = req.body;
-        const file = req.file;
+      const { title } = req.body;
+      const mainFile = req.files.mainImg ? req.files.cardImgPath[0] : null;
+      const additionalFiles = req.files.additionalImages || [];
 
-        if (!file) {
-          return res.status(400).json({ error: "No file uploaded" });
-        }
+      const gallery = await Gallery.findById(id);
+      if (!gallery) {
+        return res.status(404).json({ error: `Gallery with id ${id} not found` });
+      }
 
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-          contentType: file.mimetype,
+      if (mainFile) {
+        // Upload new main image
+        const mainFileName = `${Date.now()}-${mainFile.originalname}`;
+        const { data: mainData, error: mainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(mainFileName, mainFile.buffer, {
+          contentType: mainFile.mimetype,
           upsert: true,
         });
-        if (error) {
-          console.log("ERROR HAPPENED CHIRP");
-          console.log(error);
-        } else {
-          console.log("HANDLING NOW CHIRP");
+        if (mainError) {
+          console.log(mainError);
+          return res.status(500).json({ error: mainError.message });
+        }
+        const mainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(mainFileName).data.publicUrl;
+
+        // Delete old main image
+        if (gallery.mainImgPath) {
+          await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([gallery.mainImgPath]);
         }
 
-        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        console.log(publicUrl);
-        const gallery = await Gallery.findById(id);
-        gallery.title = title;
-        gallery.cardImgUrl = publicUrl;
-
-        const savedGallery = await gallery.save();
-
-        res.send(savedGallery);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error at PATCH" });
+        gallery.cardImgUrl = mainPublicUrl;
+        gallery.cardImgPath = mainData.path;
       }
+
+      if (additionalFiles.length > 0) {
+        // Upload new additional images
+        let newAdditionalImages = [];
+        for (const file of additionalFiles) {
+          const additionalFileName = `${Date.now()}-${file.originalname}`;
+          const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(additionalFileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true,
+          });
+          if (error) {
+            console.log(error);
+            return res.status(500).json({ error: error.message });
+          }
+          const publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(additionalFileName).data.publicUrl;
+          newAdditionalImages.push({
+            imgUrl: publicUrl,
+            imgPath: data.path,
+          });
+        }
+
+        // Delete old additional images
+        if (gallery.additionalImages && gallery.additionalImages.length > 0) {
+          for (const img of gallery.additionalImages) {
+            await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([img.imgPath]);
+          }
+        }
+
+        gallery.additionalImages = newAdditionalImages;
+      }
+
+      gallery.title = title;
+      const savedGallery = await gallery.save();
+
+      res.send(savedGallery);
     } catch (error) {
-      next(error);
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error at PATCH" });
     }
   },
 };

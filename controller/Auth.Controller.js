@@ -36,9 +36,6 @@ module.exports = {
   login: async (req, res, next) => {
     try {
       console.log("/login");
-      console.log(req.body);
-      console.log(req.body.email);
-      console.log(req.body.password);
       const result = await authSchema.validateAsync(req.body);
       const user = await User.findOne({ email: result.email });
       if (!user) throw createError.NotFound("User not registered");
@@ -47,8 +44,6 @@ module.exports = {
       if (!isMatch) throw createError.Unauthorized("Username/password not valid");
       const accessToken = await signAccessToken(user.name, user.id, user.isAdmin);
       const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin);
-      console.log("sending access token and refresh token");
-      console.log({ accessToken, refreshToken });
       res.send({ accessToken, refreshToken });
     } catch (error) {
       if (error.isJoi === true) return next(createError.BadRequest("Invalid Username/Password"));
@@ -60,9 +55,9 @@ module.exports = {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) throw createError.BadRequest();
-      const { name, userId, userIsAdmin } = await verifyRefreshToken(refreshToken);
-      const accessToken = await signAccessToken(name, userId, userIsAdmin);
-      const refToken = await signRefreshToken(name, userId, userIsAdmin);
+      const { userName, userId, userIsAdmin } = await verifyRefreshToken(refreshToken);
+      const accessToken = await signAccessToken(userName, userId, userIsAdmin);
+      const refToken = await signRefreshToken(userName, userId, userIsAdmin);
       // console.log("/refresh_token before send");
       // console.table({ refreshToken, userId, accessToken, refToken });
       res.send({ accessToken: accessToken, refreshToken: refToken });
