@@ -25,8 +25,8 @@ module.exports = {
       if (doesExist) throw createError.Conflict(`${result.email} is already registered`);
       const user = new User(result);
       const savedUser = await user.save();
-      const accessToken = await signAccessToken(savedUser.name, savedUser.id, savedUser.isAdmin);
-      const refreshToken = await signRefreshToken(savedUser.name, savedUser.id, savedUser.isAdmin);
+      const accessToken = await signAccessToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee);
+      const refreshToken = await signRefreshToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee);
       res.send({ accessToken, refreshToken });
     } catch (error) {
       if (error.isJoi === true) error.status = 422;
@@ -42,8 +42,8 @@ module.exports = {
       const isMatch = await user.isValidPassword(result.password);
       // console.log(isMatch);
       if (!isMatch) throw createError.Unauthorized("Username/password not valid");
-      const accessToken = await signAccessToken(user.name, user.id, user.isAdmin);
-      const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin);
+      const accessToken = await signAccessToken(user.name, user.id, user.isAdmin, user.isEmployee);
+      const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin, user.isEmployee);
       res.send({ accessToken, refreshToken });
     } catch (error) {
       if (error.isJoi === true) return next(createError.BadRequest("Invalid Username/Password"));
@@ -55,9 +55,9 @@ module.exports = {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) throw createError.BadRequest();
-      const { userName, userId, userIsAdmin } = await verifyRefreshToken(refreshToken);
-      const accessToken = await signAccessToken(userName, userId, userIsAdmin);
-      const refToken = await signRefreshToken(userName, userId, userIsAdmin);
+      const { userName, userId, userIsAdmin, userIsEmployee } = await verifyRefreshToken(refreshToken);
+      const accessToken = await signAccessToken(userName, userId, userIsAdmin, userIsEmployee);
+      const refToken = await signRefreshToken(userName, userId, userIsAdmin, userIsEmployee);
       // console.log("/refresh_token before send");
       // console.table({ refreshToken, userId, accessToken, refToken });
       res.send({ accessToken: accessToken, refreshToken: refToken });

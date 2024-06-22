@@ -3,10 +3,11 @@ const createError = require("http-errors");
 const client = require("./init_redis");
 
 module.exports = {
-  signAccessToken: (name, userId, isAdmin = false) => {
+  signAccessToken: (name, userId, isAdmin = false, isEmployee = false) => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
+        isEmployee: isEmployee,
         name: name,
       };
       const secret = process.env.ACCESS_TOKEN_SECRET;
@@ -38,10 +39,11 @@ module.exports = {
       next();
     });
   },
-  signRefreshToken: (name, userId, isAdmin = false) => {
+  signRefreshToken: (name, userId, isAdmin = false, isEmployee = false) => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
+        isEmployee: isEmployee,
         name: name,
       };
       const secret = process.env.REFRESH_TOKEN_SECRET;
@@ -84,6 +86,7 @@ module.exports = {
         if (err) return reject(createError.Unauthorized());
         const userId = payload.aud;
         const userIsAdmin = payload.isAdmin;
+        const userIsEmployee = payload.isEmployee;
         const userName = payload.name;
         try {
           client.GET(userId, (err, result) => {
@@ -94,7 +97,7 @@ module.exports = {
             }
 
             if (refreshToken === result) {
-              resolve({ userId, userIsAdmin, userName });
+              resolve({ userId, userIsAdmin, userName, userIsEmployee });
             } else {
               reject(createError.Unauthorized());
             }
