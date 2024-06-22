@@ -35,6 +35,7 @@ console.log("STARTING SERVER CHRIP");
 console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");
 const PostRoute = require("./routes/Post_public.route");
+const PostInternalRoute = require("./routes/Post_internal.route");
 const SolutionsRoute = require("./routes/Solutions.route");
 const GalleryRoute = require("./routes/Gallery.route");
 
@@ -49,6 +50,7 @@ app.get("/", verifyAccessToken, async (req, res, next) => {
 });
 app.use("/auth", AuthRoute);
 app.use("/post", PostRoute);
+app.use("/postinternal", PostInternalRoute);
 app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);
 
