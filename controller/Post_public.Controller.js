@@ -14,16 +14,7 @@ module.exports = {
     const total = await Post.countDocuments();
     try {
       const posts = await Post.find().skip(startIndex).limit(limit);
-      console.log(
-        posts.forEach((post) => {
-          // console.log(post.title);
-          // console.log(post.id);
-          // console.log(post.content);
-          // console.log(post.userId);
-          // console.log(post.userName);
-          // console.log("-----")
-        })
-      );
+      console.log(posts.forEach((post) => {}));
       res.json({
         totalPages: Math.ceil(total / limit),
         currentPage: page,
@@ -105,9 +96,7 @@ module.exports = {
     }
   },
   updatePost: async (req, res, next) => {
-    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     console.log("UPDATE POST CALLED");
-    console.log(req.body);
     try {
       const { id } = req.params;
       try {
@@ -116,8 +105,6 @@ module.exports = {
         const post = await Post.findById(id);
 
         if (file) {
-          // return res.status(400).json({ error: "No file uploaded" });
-
           const fileName = `${Date.now()}-${file.originalname}`;
           const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
             contentType: file.mimetype,
@@ -132,6 +119,9 @@ module.exports = {
 
           const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
           console.log(publicUrl);
+          if (post.postPath) {
+            await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([post.postPath]);
+          }
           post.postPicture = publicUrl;
           post.postPath = data.path;
         }

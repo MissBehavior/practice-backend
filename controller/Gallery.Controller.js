@@ -32,9 +32,6 @@ module.exports = {
     console.log("UPLOADING rest api called");
     try {
       const { title } = req.body;
-      console.log(req.files);
-      console.log("--------------------------------------");
-      console.log(req.body);
       const mainFile = req.files.cardImgUrl[0];
       const additionalFiles = req.files.galleryImages;
 
@@ -90,8 +87,6 @@ module.exports = {
     }
   },
   deleteGallery: async (req, res, next) => {
-    // TODO: DELETE IMAGE ON SUPRABASE AS WELL
-    console.log(req.body);
     try {
       const { id } = req.params;
       const deleted = await Gallery.findByIdAndDelete(id);
@@ -113,6 +108,11 @@ module.exports = {
           return res.status(400).json({ error: error.message });
         }
       }
+      if (deleted.additionalImages && deleted.additionalImages.length > 0) {
+        for (const img of deleted.additionalImages) {
+          await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([img.imgPath]);
+        }
+      }
       res.send(deleted);
     } catch (error) {
       console.log("delete error");
@@ -121,7 +121,6 @@ module.exports = {
     }
   },
   updateGallery: async (req, res, next) => {
-    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     try {
       const { id } = req.params;
       const { title } = req.body;
@@ -147,8 +146,8 @@ module.exports = {
         const mainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(mainFileName).data.publicUrl;
 
         // Delete old main image
-        if (gallery.mainImgPath) {
-          await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([gallery.mainImgPath]);
+        if (gallery.cardImgPath) {
+          await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([gallery.cardImgPath]);
         }
 
         gallery.cardImgUrl = mainPublicUrl;
