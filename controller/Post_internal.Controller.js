@@ -13,7 +13,7 @@ module.exports = {
     const startIndex = (page - 1) * limit;
     const total = await PostInternal.countDocuments();
     try {
-      const posts = await PostInternal.find().skip(startIndex).limit(limit);
+      const posts = await PostInternal.find().sort({ createdAt: -1 }).skip(startIndex).limit(limit);
       console.log(posts.forEach((post) => {}));
       res.json({
         totalPages: Math.ceil(total / limit),
