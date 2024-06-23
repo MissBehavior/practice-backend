@@ -107,37 +107,38 @@ module.exports = {
   updatePost: async (req, res, next) => {
     // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     console.log("UPDATE POST CALLED");
+    console.log(req.body);
     try {
       const { id } = req.params;
       try {
         const { title, content, userName, userId } = req.body;
         const file = req.file;
-
-        if (!file) {
-          return res.status(400).json({ error: "No file uploaded" });
-        }
-
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: true,
-        });
-        if (error) {
-          console.log("ERROR HAPPENED CHIRP");
-          console.log(error);
-        } else {
-          console.log("HANDLING NOW CHIRP");
-        }
-
-        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        console.log(publicUrl);
         const post = await Post.findById(id);
+
+        if (file) {
+          // return res.status(400).json({ error: "No file uploaded" });
+
+          const fileName = `${Date.now()}-${file.originalname}`;
+          const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true,
+          });
+          if (error) {
+            console.log("ERROR HAPPENED CHIRP");
+            console.log(error);
+          } else {
+            console.log("HANDLING NOW CHIRP");
+          }
+
+          const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+          console.log(publicUrl);
+          post.postPicture = publicUrl;
+          post.postPath = data.path;
+        }
         post.title = title;
         post.content = content;
-        post.postPicture = publicUrl;
         post.userName = userName;
         post.userId = userId;
-        post.postPath = data.path;
 
         const savedPost = await post.save();
 

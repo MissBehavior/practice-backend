@@ -10,8 +10,8 @@ router.get("/", Post_publicController.getPosts);
 
 router.post("/", verifyAccessToken, upload.single("image"), Post_publicController.createPost);
 
-router.delete("/:id", Post_publicController.deletePostById);
+router.delete("/:id", verifyAccessToken, Post_publicController.deletePostById);
 
-router.patch("/:id", Post_publicController.updatePost);
+router.patch("/:id", verifyAccessToken, upload.single("image"), Post_publicController.updatePost);
 
 module.exports = router;
