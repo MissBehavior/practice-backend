@@ -73,16 +73,16 @@ module.exports = {
   deletePostById: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const deleted = await Post.findByIdAndDelete(id);
+      const deleted = await PostInternal.findByIdAndDelete(id);
       if (!deleted) {
         throw createError.NotFound(`Post with id ${id} not found`);
       }
 
       if (deleted.postPath) {
         const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove(deleted.postPath);
+        console.log("DELETED postimg ");
         console.log(data);
         console.log(error);
-        console.log("DELETED postimg ");
 
         if (error) {
           console.log("delete error");
