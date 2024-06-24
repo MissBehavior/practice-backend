@@ -105,8 +105,63 @@ module.exports = {
       next(error);
     }
   },
+
+  // cardImgUrl: { type: String, required: true, default: "" },
+  // cardImgPath: { type: String, required: true, default: "" },
+  // titleCard: { type: String, required: true },
+  // contentCard: { type: String, required: true },
+  // contentMain: { type: String, required: false, default: "" },
+  // contentMainImg: { type: String, required: false, default: "" },
+  // contentMainPath: { type: String, required: false, default: "" },
+
+  updateSolutionDetail: async (req, res, next) => {
+    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
+    console.log("----");
+    try {
+      const { id } = req.params;
+      try {
+        const { titleCard, contentCard, contentMain, contentMainImg } = req.body;
+        const file = req.file;
+
+        if (!file) {
+          return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const fileName = `${Date.now()}-${file.originalname}`;
+        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true,
+        });
+        if (error) {
+          console.log("ERROR HAPPENED CHIRP");
+          console.log(error);
+        } else {
+          console.log("HANDLING NOW CHIRP");
+        }
+
+        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+        console.log(publicUrl);
+        const solution = await Solutions.findById(id);
+        solution.titleCard = titleCard;
+        solution.contentMain = contentMain;
+        solution.contentMainImg = publicUrl;
+        solution.contentMainPath = data.path;
+
+        const savedSolution = await solution.save();
+
+        res.send(savedSolution);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error at PATCH" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  },
+
   updateSolution: async (req, res, next) => {
     // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
+
     try {
       const { id } = req.params;
       try {

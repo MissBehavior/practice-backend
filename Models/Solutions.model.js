@@ -9,6 +9,7 @@ const SolutionsSchema = new Schema(
     contentCard: { type: String, required: true },
     contentMain: { type: String, required: false, default: "" },
     contentMainImg: { type: String, required: false, default: "" },
+    contentMainPath: { type: String, required: false, default: "" },
   },
   { timestamps: true }
 );
