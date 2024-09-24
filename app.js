@@ -38,6 +38,7 @@ const PostRoute = require("./routes/Post_public.route");
 const PostInternalRoute = require("./routes/Post_internal.route");
 const SolutionsRoute = require("./routes/Solutions.route");
 const GalleryRoute = require("./routes/Gallery.route");
+const AdminRoute = require("./routes/Admin.route");
 
 const app = express();
 app.use(morgan("dev"));
@@ -53,6 +54,7 @@ app.use("/post", PostRoute);
 app.use("/postinternal", PostInternalRoute);
 app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);
+app.use("/admin", AdminRoute);
 
 app.use(async (req, res, next) => {
   // const error = new Error('Not found');

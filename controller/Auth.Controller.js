@@ -37,11 +37,16 @@ module.exports = {
     try {
       console.log("/login");
       const result = await authSchema.validateAsync(req.body);
+      console.log("test1");
       const user = await User.findOne({ email: result.email });
+      console.log("test2");
       if (!user) throw createError.NotFound("User not registered");
+      console.log("test3");
       const isMatch = await user.isValidPassword(result.password);
+      console.log("test4");
       // console.log(isMatch);
       if (!isMatch) throw createError.Unauthorized("Username/password not valid");
+      console.log("test5");
       const accessToken = await signAccessToken(user.name, user.id, user.isAdmin, user.isEmployee);
       const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin, user.isEmployee);
       res.send({ accessToken, refreshToken });

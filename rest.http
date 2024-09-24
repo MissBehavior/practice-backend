@@ -101,3 +101,14 @@ Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVl
      "https://xssffzxqjglbywdaziqf.supabase.co/storage/v1/object/public/imgstorage/colibri-image-126.png"
     ]
 }
+
+
+
+
+
+
+
+############# USERS ADMIN NOW
+GET http://localhost:3000/admin/users
+Content-Type: application/json
+
