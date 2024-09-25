@@ -22,6 +22,7 @@ module.exports = {
   getSolutionsById: async (req, res, next) => {
     try {
       const { id } = req.params;
+      console.log(typeof id);
       const solution = await Solutions.findById(id);
       if (!solution) {
         throw createError.NotFound(`Solution with id ${id} not found`);

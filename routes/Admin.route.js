@@ -6,6 +6,6 @@ router.get("/users", AdminController.getUsers);
 router.get("/users/:id", AdminController.getUserById);
 // router.post("/createuser", AdminController.createUser);
 // router.patch("/users/:id", AdminController.updateUser);
-// router.delete("/users", AdminController.deleteUser);
+router.delete("/users/:id", AdminController.deleteUser);
 
 module.exports = router;

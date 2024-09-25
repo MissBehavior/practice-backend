@@ -105,10 +105,20 @@ Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVl
 
 
 
-
+############# USERS ADMIN NOW
+GET http://localhost:3000/solutions/66f2f287748343fd985b2264
+Content-Type: application/json
 
 
 ############# USERS ADMIN NOW
 GET http://localhost:3000/admin/users
+Content-Type: application/json
+
+############# USERS ADMIN NOW
+GET http://localhost:3000/admin/users/2
+Content-Type: application/json
+
+### USER DELETE TEST 
+DELETE http://localhost:3000/admin/users/668abc4e41906fc2f40fdffd
 Content-Type: application/json
 

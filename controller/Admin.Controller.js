@@ -10,7 +10,7 @@ module.exports = {
     const total = await User.countDocuments();
     console.log(total);
     try {
-      const allUsers = await User.find();
+      const allUsers = await User.find().select("-password");
       console.log("ALL USERS");
       console.log(allUsers);
       res.json({
@@ -23,8 +23,10 @@ module.exports = {
     }
   },
   getUserById: async (req, res, next) => {
+    console.log("getUserById");
     try {
       const id = req.params.id;
+      if (!id || id.length !== 24) throw createError.BadRequest("Please provide a valid user id");
       const user = await User.findById(id);
       if (!user) throw createError.NotFound("User not found");
       res.send(user);
@@ -52,13 +54,20 @@ module.exports = {
   //       next(error);
   //     }
   //   },
-  //   deleteUser: async (req, res, next) => {
-  //     try {
-
-  //         res.sendStatus(204);
-
-  //     } catch (error) {
-  //       next(error);
-  //     }
-  //   },
+  deleteUser: async (req, res, next) => {
+    try {
+      console.log("deleteUser CALLED ");
+      const { id } = req.params;
+      console.log(id);
+      if (!id || id.length !== 24) throw createError.BadRequest("Please provide a valid user id");
+      const user = await User.findById(id);
+      if (!user) throw createError.NotFound("User not found");
+      const deletedUser = await User.findByIdAndDelete(id);
+      res.send(deletedUser);
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
+  },
 };
