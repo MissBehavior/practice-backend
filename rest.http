@@ -118,6 +118,11 @@ Content-Type: application/json
 GET http://localhost:3000/admin/users/2
 Content-Type: application/json
 
+
+############# USERS ADMIN NOW
+GET http://localhost:3000/admin/users/year/2024
+Content-Type: application/json
+
 ### USER DELETE TEST 
 DELETE http://localhost:3000/admin/users/668abc4e41906fc2f40fdffd
 Content-Type: application/json

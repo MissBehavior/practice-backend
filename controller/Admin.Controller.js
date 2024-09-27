@@ -36,6 +36,25 @@ module.exports = {
       next(error);
     }
   },
+  getUsersByYear: async (req, res, next) => {
+    const year = parseInt(req.params.year);
+    if (!year || req.params.year.length !== 4) {
+      return res.status(400).send("Invalid year format.");
+    }
+    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+
+    try {
+      const users = await User.find({
+        createdAt: { $gte: startDate, $lte: endDate },
+      });
+      if (!users) throw createError.NotFound("Users not found");
+
+      res.json(users);
+    } catch (error) {
+      res.status(500).send("Error fetching users.");
+    }
+  },
   //   createUser: async (req, res, next) => {
   //     console.log("/refresh_token");
   //     try {
