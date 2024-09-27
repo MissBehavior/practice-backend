@@ -11,8 +11,6 @@ module.exports = {
     console.log(total);
     try {
       const allUsers = await User.find().select("-password");
-      console.log("ALL USERS");
-      console.log(allUsers);
       res.json({
         allUsers,
       });
@@ -47,7 +45,7 @@ module.exports = {
     try {
       const users = await User.find({
         createdAt: { $gte: startDate, $lte: endDate },
-      });
+      }).select("-password");
       if (!users) throw createError.NotFound("Users not found");
 
       res.json(users);
