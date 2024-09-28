@@ -25,8 +25,8 @@ module.exports = {
       if (doesExist) throw createError.Conflict(`${result.email} is already registered`);
       const user = new User(result);
       const savedUser = await user.save();
-      const accessToken = await signAccessToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee);
-      const refreshToken = await signRefreshToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee);
+      const accessToken = await signAccessToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee, savedUser.email, savedUser.profileImgUrl, savedUser.profileImgPath);
+      const refreshToken = await signRefreshToken(savedUser.name, savedUser.id, savedUser.isAdmin, savedUser.isEmployee, savedUser.email, savedUser.profileImgUrl, savedUser.profileImgPath);
       res.send({ accessToken, refreshToken });
     } catch (error) {
       if (error.isJoi === true) error.status = 422;
@@ -39,7 +39,7 @@ module.exports = {
       const result = await authSchema.validateAsync(req.body);
       console.log("test1");
       const user = await User.findOne({ email: result.email });
-      console.log("test2");
+      console.log(user);
       if (!user) throw createError.NotFound("User not registered");
       console.log("test3");
       const isMatch = await user.isValidPassword(result.password);
@@ -47,8 +47,8 @@ module.exports = {
       // console.log(isMatch);
       if (!isMatch) throw createError.Unauthorized("Username/password not valid");
       console.log("test5");
-      const accessToken = await signAccessToken(user.name, user.id, user.isAdmin, user.isEmployee);
-      const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin, user.isEmployee);
+      const accessToken = await signAccessToken(user.name, user.id, user.isAdmin, user.isEmployee, user.email, user.profileImgUrl, user.profileImgPath);
+      const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin, user.isEmployee, user.email, user.profileImgUrl, user.profileImgPath);
       res.send({ accessToken, refreshToken });
     } catch (error) {
       if (error.isJoi === true) return next(createError.BadRequest("Invalid Username/Password"));
@@ -60,9 +60,9 @@ module.exports = {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) throw createError.BadRequest();
-      const { userName, userId, userIsAdmin, userIsEmployee } = await verifyRefreshToken(refreshToken);
-      const accessToken = await signAccessToken(userName, userId, userIsAdmin, userIsEmployee);
-      const refToken = await signRefreshToken(userName, userId, userIsAdmin, userIsEmployee);
+      const { userName, userId, userIsAdmin, userIsEmployee, email, profileImgPath, profileImgUrl } = await verifyRefreshToken(refreshToken);
+      const accessToken = await signAccessToken(userName, userId, userIsAdmin, userIsEmployee, email, profileImgUrl, profileImgPath);
+      const refToken = await signRefreshToken(userName, userId, userIsAdmin, userIsEmployee, email, profileImgUrl, profileImgPath);
       // console.log("/refresh_token before send");
       // console.table({ refreshToken, userId, accessToken, refToken });
       res.send({ accessToken: accessToken, refreshToken: refToken });

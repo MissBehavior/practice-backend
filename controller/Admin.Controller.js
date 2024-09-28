@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 const User = require("../Models/User.model");
+const Gallery = require("../Models/Gallery.model");
 const { authSchema, signUpSchema } = require("../helpers/validation.schema");
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require("../helpers/jwt");
 const client = require("../helpers/init_redis");
@@ -13,6 +14,32 @@ module.exports = {
       const allUsers = await User.find().select("-password");
       res.json({
         allUsers,
+      });
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
+  },
+  getUserCount: async (req, res, next) => {
+    console.log("/getUserCount");
+    try {
+      const total = await User.countDocuments();
+      res.json({
+        total,
+      });
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
+  },
+  getGalleryCount: async (req, res, next) => {
+    console.log("/getGalleryCount");
+    try {
+      const total = await Gallery.countDocuments();
+      res.json({
+        total,
       });
     } catch (error) {
       console.log("ERROR HAPPENED");

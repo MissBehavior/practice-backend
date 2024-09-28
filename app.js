@@ -39,6 +39,7 @@ const PostInternalRoute = require("./routes/Post_internal.route");
 const SolutionsRoute = require("./routes/Solutions.route");
 const GalleryRoute = require("./routes/Gallery.route");
 const AdminRoute = require("./routes/Admin.route");
+const UserRoute = require("./routes/User.route");
 
 const app = express();
 app.use(morgan("dev"));
@@ -54,6 +55,7 @@ app.use("/post", PostRoute);
 app.use("/postinternal", PostInternalRoute);
 app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);
+app.use("/user", UserRoute);
 app.use("/admin", AdminRoute);
 
 app.use(async (req, res, next) => {

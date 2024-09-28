@@ -3,12 +3,15 @@ const createError = require("http-errors");
 const client = require("./init_redis");
 
 module.exports = {
-  signAccessToken: (name, userId, isAdmin = false, isEmployee = false) => {
+  signAccessToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "") => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
         isEmployee: isEmployee,
         name: name,
+        email: email,
+        profileImgUrl: profileImgUrl,
+        profileImgPath: profileImgPath,
       };
       const secret = process.env.ACCESS_TOKEN_SECRET;
       const options = {
@@ -57,12 +60,15 @@ module.exports = {
     });
   },
 
-  signRefreshToken: (name, userId, isAdmin = false, isEmployee = false) => {
+  signRefreshToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "") => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
         isEmployee: isEmployee,
         name: name,
+        email: email,
+        profileImgUrl: profileImgUrl,
+        profileImgPath: profileImgPath,
       };
       const secret = process.env.REFRESH_TOKEN_SECRET;
       const options = {
@@ -106,6 +112,9 @@ module.exports = {
         const userIsAdmin = payload.isAdmin;
         const userIsEmployee = payload.isEmployee;
         const userName = payload.name;
+        const userEmail = payload.email;
+        const userImgUrl = payload.profileImgUrl;
+        const userImgPath = payload.profileImgPath;
         try {
           client.GET(userId, (err, result) => {
             if (err) {
@@ -115,7 +124,7 @@ module.exports = {
             }
 
             if (refreshToken === result) {
-              resolve({ userId, userIsAdmin, userName, userIsEmployee });
+              resolve({ userId, userIsAdmin, userName, userIsEmployee, userEmail, userImgUrl, userImgPath });
             } else {
               reject(createError.Unauthorized());
             }

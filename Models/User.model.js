@@ -9,6 +9,8 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     isAdmin: { type: Boolean, required: false, default: false },
     isEmployee: { type: Boolean, required: false, default: false },
+    profileImgUrl: { type: String, required: false, default: "" },
+    profileImgPath: { type: String, required: false, default: "" },
     // date: { type: Date, default: Date.now },
   },
   { timestamps: true }
