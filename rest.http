@@ -107,7 +107,7 @@ POST http://localhost:3000/auth/forgot-password
 Content-Type: application/json
 
 {
-    "email": "viktorija.jakubcevic@gmail.com"
+    "email": "youdimiit@gmail.com"
 }
 
 ####### verify otp password
