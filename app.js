@@ -7,7 +7,6 @@ const { verifyAccessToken } = require("./helpers/jwt");
 const client = require("./helpers/init_redis");
 const cors = require("cors");
 const { createClient } = require("@supabase/supabase-js");
-
 const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
 
 async function uploadFile(file) {
@@ -20,17 +19,6 @@ async function uploadFile(file) {
     console.log("HANDLING NOW CHIRP");
   }
 }
-console.log("STARTING SERVER CHRIP");
-// Set "foo" to "bar"
-// (async () => {
-//   try {
-//     await client.SET("foo", "bar");
-//     console.log("SET");
-//     console.log(await client.get("foo")); // Now using await
-//   } catch (err) {
-//     console.error(err);
-//   }
-// })();
 
 console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");

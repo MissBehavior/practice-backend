@@ -11,6 +11,7 @@ const UserSchema = new Schema(
     isEmployee: { type: Boolean, required: false, default: false },
     profileImgUrl: { type: String, required: false, default: "" },
     profileImgPath: { type: String, required: false, default: "" },
+    telefon: { type: String, required: false, default: "" },
     // date: { type: Date, default: Date.now },
   },
   { timestamps: true }

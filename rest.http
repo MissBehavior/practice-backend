@@ -102,6 +102,22 @@ Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVl
     ]
 }
 
+####### forgot password
+POST http://localhost:3000/auth/forgot-password
+Content-Type: application/json
+
+{
+    "email": "viktorija.jakubcevic@gmail.com"
+}
+
+####### verify otp password
+POST http://localhost:3000/auth/verify-otp
+Content-Type: application/json
+
+{
+    "email": "viktorija.jakubcevic@gmail.com",
+    "otp": "964859"
+}
 
 
 
@@ -117,6 +133,8 @@ Content-Type: application/json
 ############# USERS ADMIN NOW
 GET http://localhost:3000/admin/users/2
 Content-Type: application/json
+
+
 
 
 ############# USERS ADMIN NOW

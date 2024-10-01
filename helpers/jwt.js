@@ -3,12 +3,13 @@ const createError = require("http-errors");
 const client = require("./init_redis");
 
 module.exports = {
-  signAccessToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "") => {
+  signAccessToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "", telefon = "") => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
         isEmployee: isEmployee,
         name: name,
+        telefon: telefon,
         email: email,
         profileImgUrl: profileImgUrl,
         profileImgPath: profileImgPath,
@@ -60,12 +61,13 @@ module.exports = {
     });
   },
 
-  signRefreshToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "") => {
+  signRefreshToken: (name, userId, isAdmin = false, isEmployee = false, email, profileImgUrl = "", profileImgPath = "", telefon = "") => {
     return new Promise((resolve, reject) => {
       const payload = {
         isAdmin: isAdmin,
         isEmployee: isEmployee,
         name: name,
+        telefon: telefon,
         email: email,
         profileImgUrl: profileImgUrl,
         profileImgPath: profileImgPath,
@@ -113,6 +115,7 @@ module.exports = {
         const userIsEmployee = payload.isEmployee;
         const userName = payload.name;
         const userEmail = payload.email;
+        const userTelefon = payload.telefon;
         const userImgUrl = payload.profileImgUrl;
         const userImgPath = payload.profileImgPath;
         try {
@@ -124,7 +127,7 @@ module.exports = {
             }
 
             if (refreshToken === result) {
-              resolve({ userId, userIsAdmin, userName, userIsEmployee, userEmail, userImgUrl, userImgPath });
+              resolve({ userId, userIsAdmin, userName, userIsEmployee, userEmail, userImgPath, userImgUrl, userTelefon });
             } else {
               reject(createError.Unauthorized());
             }

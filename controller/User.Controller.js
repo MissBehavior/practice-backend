@@ -1,10 +1,6 @@
 const { createClient } = require("@supabase/supabase-js");
 const createError = require("http-errors");
 const User = require("../Models/User.model");
-const Gallery = require("../Models/Gallery.model");
-const { authSchema, signUpSchema } = require("../helpers/validation.schema");
-const { signAccessToken, signRefreshToken, verifyRefreshToken } = require("../helpers/jwt");
-const client = require("../helpers/init_redis");
 const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
 
 module.exports = {
@@ -22,9 +18,6 @@ module.exports = {
       throw createError.NotFound("User not found");
     } else {
       const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove(user.profileImgPath);
-      console.log(data);
-      console.log(error);
-      console.log("DELETED old image");
 
       if (error) {
         console.log("delete before upload error");
@@ -86,5 +79,36 @@ module.exports = {
     user.profileImgPath = "";
     const savedUser = await user.save();
     res.json({ message: "Profile image deleted successfully", savedUser });
+  },
+  updateProfile: async (req, res, next) => {
+    console.log("/updateprofile");
+    console.log(req.body);
+    const { id } = req.params;
+    const { name, telefon } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      throw createError.NotFound("User not found");
+    }
+    if (user.id !== id) {
+      throw createError.Unauthorized("Unauthorized");
+    }
+    user.name = name;
+    user.telefon = telefon;
+    const savedUser = await user.save();
+    res.json({ message: "Profile updated successfully", savedUser });
+  },
+  getUserById: async (req, res, next) => {
+    console.log("getUserById");
+    try {
+      const id = req.params.id;
+      if (!id || id.length !== 24) throw createError.BadRequest("Please provide a valid user id");
+      const user = await User.findById(id).select("-password");
+      if (!user) throw createError.NotFound("User not found");
+      res.send(user);
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
   },
 };
