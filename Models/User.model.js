@@ -12,6 +12,13 @@ const UserSchema = new Schema(
     profileImgUrl: { type: String, required: false, default: "" },
     profileImgPath: { type: String, required: false, default: "" },
     telefon: { type: String, required: false, default: "" },
+    likedPosts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "postinternal",
+        default: [],
+      },
+    ],
     // date: { type: Date, default: Date.now },
   },
   { timestamps: true }
