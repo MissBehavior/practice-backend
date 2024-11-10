@@ -180,10 +180,8 @@ module.exports = {
   },
   commentOnPost: async (req, res) => {
     try {
-      const { text } = req.body;
+      const { text, userId } = req.body;
       const postId = req.params.id;
-      const userId = req.user._id;
-
       if (!text) {
         return res.status(400).json({ error: "Text field is required" });
       }
