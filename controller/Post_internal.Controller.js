@@ -144,17 +144,13 @@ module.exports = {
 
   likeUnlikePost: async (req, res) => {
     try {
-      const userId = req.user._id;
+      const { userId } = req.body;
       const { id: postId } = req.params;
-
       const post = await PostInternal.findById(postId);
-
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
       }
-
       const userLikedPost = post.likes.includes(userId);
-
       if (userLikedPost) {
         // Unlike post
         await PostInternal.updateOne({ _id: postId }, { $pull: { likes: userId } });

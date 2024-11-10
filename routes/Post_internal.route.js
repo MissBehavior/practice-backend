@@ -14,4 +14,5 @@ router.delete("/:id", verifyIsUserEmployee, Post_internalController.deletePostBy
 
 router.patch("/:id", verifyIsUserEmployee, Post_internalController.updatePost);
 
+router.patch("/like/:id", verifyIsUserEmployee, Post_internalController.likeUnlikePost);
 module.exports = router;

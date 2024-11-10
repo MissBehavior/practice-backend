@@ -19,7 +19,7 @@ const PostInternalSchema = new Schema(
     },
     likes: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.String,
         ref: "user",
       },
     ],
