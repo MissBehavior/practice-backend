@@ -149,3 +149,39 @@ Content-Type: application/json
 DELETE http://localhost:3000/admin/users/668abc4e41906fc2f40fdffd
 Content-Type: application/json
 
+
+
+#################### GET TASKS 
+GET http://localhost:3000/tasks
+Content-Type: application/json
+
+#################### createTASKS 
+POST http://localhost:3000/tasks
+Content-Type: application/json
+
+{
+    "title": "Test Task 2",
+    "description": "Description4",
+    "dueDate": "2021-03-10",
+    "createdBy": "Peter",
+    "tags": ["tag1", "tag3"],
+    "stage": "DONE"
+}
+
+
+######### UPDATE TASK
+PUT http://localhost:3000/tasks/674c6b2d72771e00aca14686
+Content-Type: application/json
+
+{
+    "title": "Test Task 1",
+    "description": "Description4",
+    "dueDate": "2021-03-10",
+    "createdBy": "Peter",
+    "tags": ["tag1", "tag3"],
+    "stage": "todo"
+}
+
+###### DELETE TASK
+delete http://localhost:3000/tasks/674c6ad772771e00aca1467b
+Content-Type: application/json

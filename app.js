@@ -6,19 +6,9 @@ require("./helpers/init_mongodb");
 const { verifyAccessToken } = require("./helpers/jwt");
 const client = require("./helpers/init_redis");
 const cors = require("cors");
-const { createClient } = require("@supabase/supabase-js");
-const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
+const http = require("http"); // Import the http module
 
-async function uploadFile(file) {
-  const { data, error } = await supabase.storage.from("imgstorage").upload("censor.jpg", file);
-  if (error) {
-    console.log("ERROR HAPPENED CHIRP");
-    console.log(error);
-  } else {
-    // Handle success
-    console.log("HANDLING NOW CHIRP");
-  }
-}
+const { Server } = require("socket.io");
 
 console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");
@@ -28,12 +18,44 @@ const SolutionsRoute = require("./routes/Solutions.route");
 const GalleryRoute = require("./routes/Gallery.route");
 const AdminRoute = require("./routes/Admin.route");
 const UserRoute = require("./routes/User.route");
+const TaskRoute = require("./routes/Task.route");
 
 const app = express();
+const server = http.createServer(app);
+const corsOptions = {
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+};
+const io = new Server(server, {
+  cors: corsOptions,
+});
+
+io.on("connection", (socket) => {
+  console.log(`⚡: ${socket.id} user just connected!`);
+
+  socket.on("greet", function (data) {
+    console.log(data);
+    socket.emit("respond", { hello: "Hey, Mr.Client!" });
+  });
+  socket.on("disconnect", () => {
+    console.log("🔥: A user disconnected");
+  });
+  socket.on("taskCreated", (data) => {
+    console.log("Task created: ", data);
+  });
+  socket.on("taskUpdated", (data) => {
+    console.log("Task taskUpdated: ", data);
+  });
+  socket.on("error", (error) => {
+    console.log("Error: ", error);
+  });
+});
+
 app.use(morgan("dev"));
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set("socketio", io);
 
 app.get("/", verifyAccessToken, async (req, res, next) => {
   res.send("Express get");
@@ -45,15 +67,20 @@ app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);
 app.use("/user", UserRoute);
 app.use("/admin", AdminRoute);
+app.use("/tasks", TaskRoute);
 
+// ERROR ROUTES SHOULD BE THE LAST
 app.use(async (req, res, next) => {
-  // const error = new Error('Not found');
-  // error.status = 404;
-  // next(error);
+  if (req.path.startsWith("/socket.io/")) {
+    return next(); // Skip to the next middleware
+  }
   next(createError.NotFound("Route not found"));
 });
 
 app.use(async (error, req, res, next) => {
+  if (req.path.startsWith("/socket.io/")) {
+    return next(); // Skip to the next middleware
+  }
   res.status(error.status || 500);
   res.send({
     error: {
@@ -64,6 +91,6 @@ app.use(async (error, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
