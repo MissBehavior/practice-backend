@@ -8,6 +8,7 @@ router.post("/", TaskController.createTask);
 
 // Get all tasks
 router.get("/", TaskController.getTasks);
+router.get("/:id", TaskController.getTaskById);
 
 // Update a task
 router.put("/:id", TaskController.updateTask);

@@ -2,53 +2,7 @@
 
 const Task = require("../Models/Task");
 const createError = require("http-errors");
-const UID = () => Math.random().toString(36).substring(2, 10);
 
-let tasks = {
-  pending: {
-    title: "pending",
-    items: [
-      {
-        id: UID(),
-        title: "Send the Figma file to Dima",
-        comments: [],
-      },
-    ],
-  },
-  ongoing: {
-    title: "ongoing",
-    items: [
-      {
-        id: UID(),
-        title: "Review GitHub issues",
-        comments: [
-          {
-            name: "David",
-            text: "Ensure you review before merging",
-            id: UID(),
-          },
-        ],
-      },
-    ],
-  },
-  completed: {
-    title: "completed",
-    items: [
-      {
-        id: UID(),
-        title: "Create technical contents",
-        comments: [
-          {
-            name: "Dima",
-            text: "Make sure you check the requirements",
-            id: UID(),
-          },
-        ],
-      },
-    ],
-  },
-};
-// Create a new task
 exports.createTask = async (req, res, next) => {
   try {
     console.log("Task created");
@@ -69,8 +23,23 @@ exports.createTask = async (req, res, next) => {
 exports.getTasks = async (req, res, next) => {
   try {
     console.log("Tasks fetched");
-    const tasks = await Task.find().populate("assignee");
+    const tasks = await Task.find().populate("assignee", "name email profileImgUrl");
     res.json(tasks);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get a task by ID
+exports.getTaskById = async (req, res, next) => {
+  try {
+    console.log("Task fetched by ID");
+    const { id } = req.params;
+    const task = await Task.findById(id).populate("assignee", "name email profileImgUrl");
+    if (!task) {
+      throw createError(404, "Task not found");
+    }
+    res.json(task);
   } catch (error) {
     next(error);
   }
@@ -84,11 +53,12 @@ exports.updateTask = async (req, res, next) => {
     const taskData = req.body;
     console.log("UPDATED TASK:::::::::::");
     console.log(taskData);
-    const updatedTask = await Task.findByIdAndUpdate(id, taskData, { new: true });
+    const updatedTask = await Task.findByIdAndUpdate(id, taskData, { new: true }).populate("assignee", "name email profileImgUrl");
     console.log("UPDATED TASK:::::::::::");
-    console.log(taskData);
-
-    // Emit the updated task to all connected clients
+    console.log(updatedTask);
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
     req.app.get("socketio").emit("taskUpdated", updatedTask);
 
     res.json(updatedTask);

@@ -167,6 +167,21 @@ Content-Type: application/json
     "tags": ["tag1", "tag3"],
     "stage": "DONE"
 }
+#################### createTASKS Assignee
+POST http://localhost:3000/tasks
+Content-Type: application/json
+
+{
+    "title": "Test Task 2",
+    "description": "Description4",
+    "dueDate": "2021-03-10",
+    "createdBy": "Peter",
+    "tags": ["tag1", "tag3"],
+    "stage": "DONE",
+    "assignee": [
+        "66f2f02a5d692c606c828e35"
+    ]
+}
 
 
 ######### UPDATE TASK

@@ -46,6 +46,9 @@ io.on("connection", (socket) => {
   socket.on("taskUpdated", (data) => {
     console.log("Task taskUpdated: ", data);
   });
+  socket.on("deleteTask", (data) => {
+    console.log("Task deleteTask: ", data);
+  });
   socket.on("error", (error) => {
     console.log("Error: ", error);
   });
