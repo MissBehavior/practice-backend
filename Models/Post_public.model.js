@@ -12,15 +12,18 @@ const PostSchema = new Schema(
       ref: "user",
       required: true,
     },
-    userName: {
-      type: mongoose.Schema.Types.String,
-      ref: "user",
-      required: true,
-    },
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );
-
+PostSchema.index({ createdAt: -1 });
+PostSchema.index({ categories: 1 });
 PostSchema.pre("save", async function (next) {
   try {
     next();

@@ -49,7 +49,16 @@ Content-Type: application/json
 
 
 ### Get Posts
-GET http://localhost:3000/post/
+GET http://localhost:3000/postinternal/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVlLCJpc0VtcGxveWVlIjp0cnVlLCJuYW1lIjoiMUAxLmNvbSIsInRlbGVmb24iOiIiLCJlbWFpbCI6IjFAMS5jb20iLCJwcm9maWxlSW1nVXJsIjoiIiwicHJvZmlsZUltZ1BhdGgiOiIiLCJpYXQiOjE3MzQwODQyNTAsImV4cCI6MTczNDA4Nzg1MCwiYXVkIjoiNjc1NWExYWIxNGFmOTMyYmVmYWQyMjE4IiwiaXNzIjoicHJhY3RpY2UuZG9tYWluLmNvbSJ9.zb0jE3iJ2HZ9XKVrJmh43FLvbzhxXq5Z2vx-S2l30QM
+
+{
+   
+}
+
+### Get Posts
+GET http://localhost:3000/posts/
 Content-Type: application/json
 
 {
@@ -57,9 +66,9 @@ Content-Type: application/json
 }
 
 ### Post New Posts
-POST http://localhost:3000/post/
+POST http://localhost:3000/posts/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVlLCJuYW1lIjoiMUAxLmNvbSIsImlhdCI6MTcxNzc5MjkzOCwiZXhwIjoxNzE3Nzk2NTM4LCJhdWQiOiI2NjVjODg4MTIxYTc4YWNiMTIwMDhjMTIiLCJpc3MiOiJwcmFjdGljZS5kb21haW4uY29tIn0.YYWjRYbUn_hklHYKD-Sy6ugAO3QwrL0znrIBgerRjuA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjpmYWxzZSwiaXNFbXBsb3llZSI6ZmFsc2UsIm5hbWUiOiIxQDEuY29tIiwidGVsZWZvbiI6IiIsImVtYWlsIjoiMUAxLmNvbSIsInByb2ZpbGVJbWdVcmwiOiIiLCJwcm9maWxlSW1nUGF0aCI6IiIsImlhdCI6MTczMzY2NTE5NSwiZXhwIjoxNzMzNjY4Nzk1LCJhdWQiOiI2NzU1YTFhYjE0YWY5MzJiZWZhZDIyMTgiLCJpc3MiOiJwcmFjdGljZS5kb21haW4uY29tIn0.I2Ep5nxVj06brYLXSh52rCIcGb1vtgGo2hh1LwwB4-c
 
 {
     "title": "Vickusik Kartusik NEW PAGE",

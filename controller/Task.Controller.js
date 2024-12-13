@@ -66,7 +66,27 @@ exports.updateTask = async (req, res, next) => {
     next(error);
   }
 };
+exports.getTaskStats = async (req, res, next) => {
+  console.log("Task stats fetched");
+  try {
+    const stats = await Task.aggregate([
+      {
+        $group: {
+          _id: "$stage",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    const formattedStats = stats.map((item) => ({
+      stage: item._id,
+      count: item.count,
+    }));
 
+    res.json(formattedStats);
+  } catch (error) {
+    next(error);
+  }
+};
 // Delete a task
 exports.deleteTask = async (req, res, next) => {
   try {

@@ -1,6 +1,25 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
+const CommentSchema = new Schema(
+  {
+    text: {
+      type: String,
+      required: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.String,
+        ref: "user",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 const PostInternalSchema = new Schema(
   {
     title: { type: String, required: true },
@@ -23,19 +42,7 @@ const PostInternalSchema = new Schema(
         ref: "user",
       },
     ],
-    comments: [
-      {
-        text: {
-          type: String,
-          required: true,
-        },
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "user",
-          required: true,
-        },
-      },
-    ],
+    comments: [CommentSchema],
   },
   { timestamps: true }
 );
@@ -54,6 +61,7 @@ PostInternalSchema.post("save", async function (error, doc, next) {
     next(error);
   }
 });
+
 const PostInternal = mongoose.model("postinternal", PostInternalSchema);
 
 module.exports = PostInternal;

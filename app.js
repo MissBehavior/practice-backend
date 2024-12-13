@@ -13,6 +13,7 @@ const { Server } = require("socket.io");
 console.log("Server-side code running!");
 const AuthRoute = require("./routes/Auth.route");
 const PostRoute = require("./routes/Post_public.route");
+const CategoryRoute = require("./routes/Category.route");
 const PostInternalRoute = require("./routes/Post_internal.route");
 const SolutionsRoute = require("./routes/Solutions.route");
 const GalleryRoute = require("./routes/Gallery.route");
@@ -64,7 +65,8 @@ app.get("/", verifyAccessToken, async (req, res, next) => {
   res.send("Express get");
 });
 app.use("/auth", AuthRoute);
-app.use("/post", PostRoute);
+app.use("/posts", PostRoute);
+app.use("/categories", CategoryRoute);
 app.use("/postinternal", PostInternalRoute);
 app.use("/solutions", SolutionsRoute);
 app.use("/gallery", GalleryRoute);

@@ -7,6 +7,7 @@ const Post_internalController = require("../controller/Post_internal.Controller"
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.get("/", verifyIsUserEmployee, Post_internalController.getPosts);
+router.get("/:id", verifyIsUserEmployee, Post_internalController.getPostById);
 
 router.post("/", verifyIsUserEmployee, upload.single("image"), Post_internalController.createPost);
 
@@ -15,5 +16,7 @@ router.delete("/:id", verifyIsUserEmployee, Post_internalController.deletePostBy
 router.patch("/:id", verifyIsUserEmployee, Post_internalController.updatePost);
 
 router.patch("/like/:id", verifyIsUserEmployee, Post_internalController.likeUnlikePost);
+router.patch("/:postId/comment/:commentId/like", verifyIsUserEmployee, Post_internalController.likeUnlikeComment);
 router.post("/comment/:id", verifyIsUserEmployee, Post_internalController.commentOnPost);
+
 module.exports = router;

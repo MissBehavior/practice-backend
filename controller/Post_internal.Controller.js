@@ -13,8 +13,8 @@ module.exports = {
     const startIndex = (page - 1) * limit;
     const total = await PostInternal.countDocuments();
     try {
-      const posts = await PostInternal.find().sort({ createdAt: -1 }).skip(startIndex).limit(limit);
-      console.log(posts.forEach((post) => {}));
+      const posts = await PostInternal.find().populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
+
       res.json({
         totalPages: Math.ceil(total / limit),
         currentPage: page,
@@ -24,10 +24,22 @@ module.exports = {
       next(error);
     }
   },
+
+  getPostById: async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const post = await PostInternal.findById(id).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
+
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      next(error);
+    }
+  },
+
   createPost: async (req, res, next) => {
-    console.log("UPLOADING rest api for post called");
-    console.log(req.body);
-    console.log(req.body.userId);
     try {
       const { title, content, userName, userId } = req.body;
       const file = req.file;
@@ -40,36 +52,31 @@ module.exports = {
         upsert: true,
       });
       if (error) {
-        console.log("ERROR HAPPENED CHIRP");
-        console.log(error);
-      } else {
-        console.log("HANDLING NOW CHIRP");
+        console.error("Error uploading to Supabase:", error);
       }
       const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-      console.log("-------------------------------");
-      console.log(title, content, userName, publicUrl, userId);
-      console.log("-------------------------------");
       const user = await User.findById(userId);
       if (!user) {
         throw createError.NotFound("User not found");
       }
-      const post = new PostInternal({ title, content, postPicture: publicUrl, userName, userId: userId, postPath: data.path });
-      console.log(post);
-      console.log(post.title);
-      console.log(post.content);
-      console.log(post.userName);
-      console.log(post.userId);
-      console.log(post.postPicture);
-      console.log(post.postPath);
 
-      const savedPost = await post.save();
-      res.send(savedPost);
+      const post = new PostInternal({
+        title,
+        content,
+        postPicture: publicUrl,
+        userName,
+        userId,
+        postPath: data.path,
+      });
+      await post.save();
+      const populatedPost = await PostInternal.findById(post._id).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
+      res.send(populatedPost);
     } catch (error) {
-      console.log(" post new post error");
-      console.log(error);
+      console.error("Error creating new post:", error);
       next(error);
     }
   },
+
   deletePostById: async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -77,16 +84,10 @@ module.exports = {
       if (!deleted) {
         throw createError.NotFound(`Post with id ${id} not found`);
       }
-
       if (deleted.postPath) {
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove(deleted.postPath);
-        console.log("DELETED postimg ");
-        console.log(data);
-        console.log(error);
-
+        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([deleted.postPath]);
         if (error) {
-          console.log("delete error");
-          console.log(error);
+          console.error("Error deleting image from Supabase:", error);
           return res.status(400).json({ error: error.message });
         }
       }
@@ -95,49 +96,42 @@ module.exports = {
       next(error);
     }
   },
+
   updatePost: async (req, res, next) => {
-    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
-    console.log("UPDATE POST CALLED");
     try {
       const { id } = req.params;
-      try {
-        const { title, content, userName, userId } = req.body;
-        const file = req.file;
+      const { title, content, userName, userId } = req.body;
+      const file = req.file;
 
-        if (!file) {
-          return res.status(400).json({ error: "No file uploaded" });
-        }
-
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: true,
-        });
-        if (error) {
-          console.log("ERROR HAPPENED CHIRP");
-          console.log(error);
-        } else {
-          console.log("HANDLING NOW CHIRP");
-        }
-
-        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        console.log(publicUrl);
-        const post = await PostInternal.findById(id);
-        post.title = title;
-        post.content = content;
-        post.postPicture = publicUrl;
-        post.userName = userName;
-        post.userId = userId;
-        post.postPath = data.path;
-
-        const savedPost = await post.save();
-
-        res.send(savedPost);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error at PATCH" });
+      if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
       }
+
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+      if (error) {
+        console.error("Error uploading to Supabase:", error);
+      }
+      const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+      const post = await PostInternal.findById(id);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      post.title = title;
+      post.content = content;
+      post.postPicture = publicUrl;
+      post.userName = userName;
+      post.userId = userId;
+      post.postPath = data.path;
+      await post.save();
+      const populatedPost = await PostInternal.findById(post._id).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
+
+      res.send(populatedPost);
     } catch (error) {
+      console.error("Error updating post:", error);
       next(error);
     }
   },
@@ -146,38 +140,24 @@ module.exports = {
     try {
       const { userId } = req.body;
       const { id: postId } = req.params;
-      const post = await PostInternal.findById(postId);
+
+      const post = await PostInternal.findById(postId).select("likes");
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
       }
       const userLikedPost = post.likes.includes(userId);
-      if (userLikedPost) {
-        // Unlike post
-        await PostInternal.updateOne({ _id: postId }, { $pull: { likes: userId } });
-        await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
+      const postUpdate = userLikedPost ? { $pull: { likes: userId } } : { $addToSet: { likes: userId } };
+      const userUpdate = userLikedPost ? { $pull: { likedPosts: postId } } : { $addToSet: { likedPosts: postId } };
+      await Promise.all([PostInternal.updateOne({ _id: postId }, postUpdate), User.updateOne({ _id: userId }, userUpdate)]);
+      const populatedPost = await PostInternal.findById(postId).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
 
-        const updatedLikes = post.likes.filter((id) => id.toString() !== userId.toString());
-        res.status(200).json(updatedLikes);
-      } else {
-        // Like post
-        post.likes.push(userId);
-        await User.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
-        await post.save();
-
-        // const notification = new Notification({
-        //   from: userId,
-        //   to: post.user,
-        //   type: "like",
-        // });
-        // await notification.save();
-        const updatedLikes = post.likes;
-        res.status(200).json(updatedLikes);
-      }
+      res.status(200).json(populatedPost);
     } catch (error) {
-      console.log("Error in likeUnlikePost controller: ", error);
+      console.error("Error in likeUnlikePost controller: ", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
+
   commentOnPost: async (req, res) => {
     try {
       const { text, userId } = req.body;
@@ -185,23 +165,25 @@ module.exports = {
       if (!text) {
         return res.status(400).json({ error: "Text field is required" });
       }
-      const post = await PostInternal.findById(postId);
 
+      const post = await PostInternal.findById(postId);
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
       }
 
       const comment = { user: userId, text };
-
       post.comments.push(comment);
       await post.save();
 
-      res.status(200).json(post);
+      const populatedPost = await PostInternal.findById(postId).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
+
+      res.status(200).json(populatedPost);
     } catch (error) {
       console.log("Error in commentOnPost controller: ", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
+
   getLikedPosts: async (req, res) => {
     const userId = req.params.id;
 
@@ -209,19 +191,47 @@ module.exports = {
       const user = await User.findById(userId);
       if (!user) return res.status(404).json({ error: "User not found" });
 
-      const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
-        .populate({
-          path: "user",
-          select: "-password",
-        })
-        .populate({
-          path: "comments.user",
-          select: "-password",
-        });
+      const likedPosts = await PostInternal.find({ _id: { $in: user.likedPosts } })
+        .populate("userId", "name email profileImgUrl")
+        .populate("comments.user", "name email profileImgUrl")
+        .populate("likes", "name email profileImgUrl")
+        .lean();
 
       res.status(200).json(likedPosts);
     } catch (error) {
       console.log("Error in getLikedPosts controller: ", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  likeUnlikeComment: async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const { postId, commentId } = req.params;
+
+      const post = await PostInternal.findById(postId);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      const comment = post.comments.id(commentId);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+
+      const userLikedComment = comment.likes.includes(userId);
+      if (userLikedComment) {
+        comment.likes = comment.likes.filter((likeUserId) => likeUserId !== userId);
+      } else {
+        comment.likes.push(userId);
+      }
+
+      await post.save();
+
+      const populatedPost = await PostInternal.findById(postId).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
+
+      res.status(200).json(populatedPost);
+    } catch (error) {
+      console.log("Error in likeUnlikeComment controller: ", error);
       res.status(500).json({ error: "Internal server error" });
     }
   },
