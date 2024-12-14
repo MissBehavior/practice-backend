@@ -6,14 +6,47 @@ const createError = require("http-errors");
 const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
 
 module.exports = {
+  // getPosts: async (req, res, next) => {
+  //   const page = parseInt(req.query.page) || 1;
+  //   const limit = parseInt(req.query.limit) || 10;
+
+  //   const startIndex = (page - 1) * limit;
+  //   const total = await PostInternal.countDocuments();
+  //   try {
+  //     const posts = await PostInternal.find()
+  //     .populate("userId", "name email profileImgUrl")
+  //     .populate("comments.user", "name email profileImgUrl")
+  //     .populate("likes", "name email profileImgUrl")
+  //     .sort({ createdAt: -1 })
+  //     .skip(startIndex)
+  //     .limit(limit)
+  //     .lean();
+
+  //     res.json({
+  //       totalPages: Math.ceil(total / limit),
+  //       currentPage: page,
+  //       posts,
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // },
   getPosts: async (req, res, next) => {
+    console.log("getPosts");
+    console.log(req);
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const query = req.query.query || "";
+
+    const filter = {};
+    if (query) {
+      filter.$or = [{ title: { $regex: query, $options: "i" } }, { content: { $regex: query, $options: "i" } }, { userName: { $regex: query, $options: "i" } }];
+    }
 
     const startIndex = (page - 1) * limit;
-    const total = await PostInternal.countDocuments();
     try {
-      const posts = await PostInternal.find().populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
+      const total = await PostInternal.countDocuments(filter);
+      const posts = await PostInternal.find(filter).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
 
       res.json({
         totalPages: Math.ceil(total / limit),
