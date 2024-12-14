@@ -21,6 +21,39 @@ module.exports = {
       next(error);
     }
   },
+  createUser: async (req, res, next) => {
+    try {
+      const { name, email, telefon, isAdmin, isEmployee } = req.body;
+      const newUser = new User({ name, email, telefon, isAdmin, isEmployee, password: "password" });
+      const savedUser = await newUser.save();
+      const userWithoutPassword = await User.findById(savedUser._id).select("-password");
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
+  },
+  updateUser: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      if (!id || id.length !== 24) throw createError.BadRequest("Please provide a valid user id");
+
+      const { name, email, telefon, isAdmin, isEmployee } = req.body;
+
+      const updatedUser = await User.findByIdAndUpdate(id, { name, email, telefon, isAdmin, isEmployee }, { new: true }).select("-password");
+
+      if (!updatedUser) throw createError.NotFound("User not found");
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.log("ERROR HAPPENED");
+      console.log(error);
+      next(error);
+    }
+  },
+
   getUserCount: async (req, res, next) => {
     console.log("/getUserCount");
     try {

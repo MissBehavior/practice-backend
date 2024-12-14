@@ -32,7 +32,7 @@ const TaskSchema = new Schema(
     stage: {
       type: String,
       required: true,
-      default: "pending", // default stage
+      default: "Unassigned", // default stage
     },
   },
   { timestamps: true }
