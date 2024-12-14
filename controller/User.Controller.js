@@ -84,7 +84,7 @@ module.exports = {
     console.log("/updateprofile");
     console.log(req.body);
     const { id } = req.params;
-    const { name, telefon } = req.body;
+    const { name, telefon, languages } = req.body;
     const user = await User.findById(id);
     if (!user) {
       throw createError.NotFound("User not found");
@@ -92,8 +92,14 @@ module.exports = {
     if (user.id !== id) {
       throw createError.Unauthorized("Unauthorized");
     }
+
+    // Update fields
     user.name = name;
     user.telefon = telefon;
+    if (Array.isArray(languages)) {
+      user.languages = languages;
+    }
+
     const savedUser = await user.save();
     res.json({ message: "Profile updated successfully", savedUser });
   },

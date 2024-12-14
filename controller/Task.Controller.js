@@ -7,6 +7,8 @@ exports.createTask = async (req, res, next) => {
   try {
     console.log("Task created");
     const taskData = req.body;
+    console.log("TASK DATA:::::::::::::");
+    console.log(taskData);
     const task = new Task(taskData);
     const savedTask = await task.save();
 
