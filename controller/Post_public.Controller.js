@@ -108,7 +108,7 @@ module.exports = {
     console.log("UPLOADING rest api for post called");
     console.log(req.body);
     try {
-      let { title, content, userId, categories } = req.body;
+      let { title, content, contentLT, userId, categories } = req.body;
       const file = req.file;
 
       // Ensure categories is always an array
@@ -164,7 +164,7 @@ module.exports = {
       const publicUrl = publicUrlData.data.publicUrl;
 
       console.log("-------------------------------");
-      console.log(title, content, publicUrl, userId);
+      console.log(title, content, contentLT, publicUrl, userId);
       console.log("-------------------------------");
       const user = await User.findById(userId);
       if (!user) {
@@ -173,6 +173,7 @@ module.exports = {
       const newPost = new Post({
         title,
         content,
+        contentLT,
         postPicture: publicUrl,
         userId,
         postPath: uploadData.path,
@@ -215,7 +216,7 @@ module.exports = {
     console.log("UPDATE POST CALLED");
     try {
       const { id } = req.params;
-      const { title, content, userId, categories } = req.body;
+      const { title, content, userId, categories, contentLT } = req.body;
       const file = req.file;
 
       const post = await Post.findById(id);
@@ -280,6 +281,7 @@ module.exports = {
 
       if (title) post.title = title;
       if (content) post.content = content;
+      if (contentLT) post.contentLT = contentLT;
       if (userId) post.userId = userId;
 
       const savedPost = await post.save();
@@ -313,46 +315,3 @@ module.exports = {
     }
   },
 };
-
-// try {
-//   const { title, content, userName, userId } = req.body;
-//   const file = req.file;
-//   const post = await Post.findById(id);
-
-//   if (file) {
-//     const fileName = `${Date.now()}-${file.originalname}`;
-//     const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-//       contentType: file.mimetype,
-//       upsert: true,
-//     });
-//     if (error) {
-//       console.log("ERROR HAPPENED CHIRP");
-//       console.log(error);
-//     } else {
-//       console.log("HANDLING NOW CHIRP");
-//     }
-
-//     const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-//     console.log(publicUrl);
-//     if (post.postPath) {
-//       await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([post.postPath]);
-//     }
-//     post.postPicture = publicUrl;
-//     post.postPath = data.path;
-//   }
-//   post.title = title;
-//   post.content = content;
-//   post.userName = userName;
-//   post.userId = userId;
-
-//   const savedPost = await post.save();
-
-//   res.send(savedPost);
-// } catch (error) {
-//   console.error(error);
-//   res.status(500).json({ error: "Internal Server Error at PATCH" });
-// }
-// } catch (error) {
-// next(error);
-// }
-// },
