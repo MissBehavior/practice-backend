@@ -161,46 +161,46 @@ module.exports = {
   },
 
   updateSolution: async (req, res, next) => {
-    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
-
+    console.log("UpdateSolution CALLED");
     try {
       const { id } = req.params;
-      try {
-        const { titleCard, contentCard } = req.body;
-        const file = req.file;
+      const { titleCard, contentCard, cardImgUrl } = req.body; // Get existing image URL from body
+      const file = req.file;
 
-        if (!file) {
-          return res.status(400).json({ error: "No file uploaded" });
-        }
-
+      // Find the existing solution
+      const solution = await Solutions.findById(id);
+      if (!solution) {
+        return res.status(404).json({ error: "Solution not found" });
+      }
+      let publicUrl = cardImgUrl;
+      if (file) {
         const fileName = `${Date.now()}-${file.originalname}`;
         const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
           contentType: file.mimetype,
           upsert: true,
         });
         if (error) {
-          console.log("ERROR HAPPENED CHIRP");
-          console.log(error);
-        } else {
-          console.log("HANDLING NOW CHIRP");
+          console.error("Supabase upload error:", error);
+          return res.status(500).json({ error: "Image upload failed" });
         }
+        publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
 
-        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        console.log(publicUrl);
-        const solution = await Solutions.findById(id);
-        solution.titleCard = titleCard;
-        solution.contentCard = contentCard;
-        solution.cardImgUrl = publicUrl;
-
-        const savedSolution = await solution.save();
-
-        res.send(savedSolution);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error at PATCH" });
+        const oldImagePath = solution.cardImgUrl.split("/").pop(); // Extract the filename from the URL
+        const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldImagePath]);
+        if (deleteError) {
+          console.error("Error deleting old image from Supabase:", deleteError);
+        }
       }
+
+      solution.titleCard = titleCard;
+      solution.contentCard = contentCard;
+      solution.cardImgUrl = publicUrl;
+
+      const savedSolution = await solution.save();
+      res.send(savedSolution);
     } catch (error) {
-      next(error);
+      console.error("Error updating solution:", error);
+      res.status(500).json({ error: "Internal Server Error at PATCH" });
     }
   },
 };
