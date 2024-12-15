@@ -5,13 +5,12 @@ const createError = require("http-errors");
 
 exports.createTask = async (req, res, next) => {
   try {
-    console.log("Task created");
     const taskData = req.body;
     console.log("TASK DATA:::::::::::::");
     console.log(taskData);
     const task = new Task(taskData);
     const savedTask = await task.save();
-
+    (await savedTask.populate("assignee", "name email profileImgUrl")).populate("createdBy", "name email profileImgUrl");
     // Emit the new task to all connected clients via Socket.IO
     req.app.get("socketio").emit("taskCreated", savedTask);
 
@@ -25,7 +24,7 @@ exports.createTask = async (req, res, next) => {
 exports.getTasks = async (req, res, next) => {
   try {
     console.log("Tasks fetched");
-    const tasks = await Task.find().populate("assignee", "name email profileImgUrl");
+    const tasks = await Task.find().populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
     res.json(tasks);
   } catch (error) {
     next(error);
@@ -37,7 +36,7 @@ exports.getTaskById = async (req, res, next) => {
   try {
     console.log("Task fetched by ID");
     const { id } = req.params;
-    const task = await Task.findById(id).populate("assignee", "name email profileImgUrl");
+    const task = await Task.findById(id).populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
     if (!task) {
       throw createError(404, "Task not found");
     }
@@ -55,7 +54,7 @@ exports.updateTask = async (req, res, next) => {
     const taskData = req.body;
     console.log("UPDATED TASK:::::::::::");
     console.log(taskData);
-    const updatedTask = await Task.findByIdAndUpdate(id, taskData, { new: true }).populate("assignee", "name email profileImgUrl");
+    const updatedTask = await Task.findByIdAndUpdate(id, taskData, { new: true }).populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
     console.log("UPDATED TASK:::::::::::");
     console.log(updatedTask);
     if (!updatedTask) {

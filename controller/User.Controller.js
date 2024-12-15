@@ -117,4 +117,12 @@ module.exports = {
       next(error);
     }
   },
+  getAllUsers: async (req, res, next) => {
+    try {
+      const users = await User.find().select("_id name email profileImgUrl");
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  },
 };

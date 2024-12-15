@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { verifyAccessToken } = require("../helpers/jwt");
+const { verifyAccessToken, verifyIsUserEmployee } = require("../helpers/jwt");
 const multer = require("multer");
 const UserController = require("../controller/User.Controller");
 
@@ -10,6 +10,7 @@ router.post("/uploadprofile/", verifyAccessToken, upload.single("image"), UserCo
 router.delete("/deleteprofile/:id", verifyAccessToken, UserController.deleteProfileImg);
 router.patch("/:id", verifyAccessToken, UserController.updateProfile);
 router.get("/:id", UserController.getUserById);
+router.get("/", verifyIsUserEmployee, UserController.getAllUsers);
 // router.get("/users/year/:year", AdminController.getUsersByYear);
 // router.get("/users/count/all", AdminController.getUserCount);
 // router.delete("/users/:id", AdminController.deleteUser);
