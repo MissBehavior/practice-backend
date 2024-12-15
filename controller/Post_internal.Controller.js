@@ -32,8 +32,7 @@ module.exports = {
   //   }
   // },
   getPosts: async (req, res, next) => {
-    console.log("getPosts");
-    console.log(req);
+    console.log("getPosts internal");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const query = req.query.query || "";

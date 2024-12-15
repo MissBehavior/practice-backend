@@ -8,25 +8,6 @@ const createError = require("http-errors");
 const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
 
 module.exports = {
-  // getPosts: async (req, res, next) => {
-  //   const page = parseInt(req.query.page) || 1;
-  //   const limit = parseInt(req.query.limit) || 10;
-
-  //   const startIndex = (page - 1) * limit;
-  //   const total = await Post.countDocuments();
-  //   try {
-  //     const posts = await Post.find().populate("userId", "name email profileImgUrl").limit(limit).skip(startIndex);
-  //     console.log(posts.forEach((post) => {}));
-  //     res.json({
-  //       totalPages: Math.ceil(total / limit),
-  //       currentPage: page,
-  //       posts,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
-
   getPosts: async (req, res, next) => {
     console.log("getposts called");
     try {
@@ -84,6 +65,7 @@ module.exports = {
   },
 
   getPostsByCategory: async (req, res, next) => {
+    console.log("getPostsByCategory called");
     try {
       const { categoryId } = req.params;
       const page = parseInt(req.query.page) || 1;
@@ -105,10 +87,9 @@ module.exports = {
   },
 
   createPost: async (req, res, next) => {
-    console.log("UPLOADING rest api for post called");
-    console.log(req.body);
+    console.log("Create postPublic called");
     try {
-      let { title, content, contentLT, userId, categories } = req.body;
+      let { title, titleLT, content, contentLT, userId, categories } = req.body;
       const file = req.file;
 
       // Ensure categories is always an array
@@ -164,7 +145,7 @@ module.exports = {
       const publicUrl = publicUrlData.data.publicUrl;
 
       console.log("-------------------------------");
-      console.log(title, content, contentLT, publicUrl, userId);
+      console.log(title, titleLT, content, contentLT, publicUrl, userId);
       console.log("-------------------------------");
       const user = await User.findById(userId);
       if (!user) {
@@ -172,6 +153,7 @@ module.exports = {
       }
       const newPost = new Post({
         title,
+        titleLT,
         content,
         contentLT,
         postPicture: publicUrl,
@@ -189,6 +171,7 @@ module.exports = {
   },
 
   deletePostById: async (req, res, next) => {
+    console.log("DELETE POST CALLED");
     try {
       const { id } = req.params;
       const deleted = await Post.findByIdAndDelete(id);
@@ -216,7 +199,7 @@ module.exports = {
     console.log("UPDATE POST CALLED");
     try {
       const { id } = req.params;
-      const { title, content, userId, categories, contentLT } = req.body;
+      const { title, titleLT, content, userId, categories, contentLT } = req.body;
       const file = req.file;
 
       const post = await Post.findById(id);
@@ -280,6 +263,7 @@ module.exports = {
       }
 
       if (title) post.title = title;
+      if (titleLT) post.titleLT = titleLT;
       if (content) post.content = content;
       if (contentLT) post.contentLT = contentLT;
       if (userId) post.userId = userId;
@@ -293,6 +277,7 @@ module.exports = {
     }
   },
   getPostById: async (req, res, next) => {
+    console.log("GET POST BY ID CALLED");
     try {
       const { id } = req.params;
 

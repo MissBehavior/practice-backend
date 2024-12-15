@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const PostSchema = new Schema(
   {
     title: { type: String, required: true },
+    titleLT: { type: String, required: true },
     content: { type: String, required: true },
     contentLT: { type: String, required: true },
     postPicture: { type: String, required: false, default: "" },
