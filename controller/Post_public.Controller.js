@@ -276,24 +276,50 @@ module.exports = {
       next(error);
     }
   },
+  // getPostById: async (req, res, next) => {
+  //   console.log("GET POST BY ID CALLED");
+  //   try {
+  //     const { id } = req.params;
+
+  //     // Validate the ID format (assuming MongoDB ObjectId)
+  //     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+  //       return next(createError(400, "Invalid post ID format"));
+  //     }
+
+  //     // Find the post by ID and populate categories and userId
+  //     const post = await Post.findById(id).populate("categories").populate("userId", "name email profileImgUrl").lean();
+
+  //     if (!post) {
+  //       return next(createError(404, "Post not found"));
+  //     }
+
+  //     res.json(post);
+  //   } catch (error) {
+  //     console.error("Error fetching post by ID:", error);
+  //     next(createError(500, "Internal Server Error"));
+  //   }
+  // },
   getPostById: async (req, res, next) => {
     console.log("GET POST BY ID CALLED");
     try {
       const { id } = req.params;
 
-      // Validate the ID format (assuming MongoDB ObjectId)
       if (!id.match(/^[0-9a-fA-F]{24}$/)) {
         return next(createError(400, "Invalid post ID format"));
       }
 
-      // Find the post by ID and populate categories and userId
       const post = await Post.findById(id).populate("categories").populate("userId", "name email profileImgUrl").lean();
 
       if (!post) {
         return next(createError(404, "Post not found"));
       }
 
-      res.json(post);
+      const randomPosts = await Post.aggregate([{ $match: { _id: { $ne: post._id } } }, { $sample: { size: 3 } }]);
+
+      res.json({
+        post,
+        randomPosts,
+      });
     } catch (error) {
       console.error("Error fetching post by ID:", error);
       next(createError(500, "Internal Server Error"));
