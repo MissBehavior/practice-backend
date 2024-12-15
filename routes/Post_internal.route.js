@@ -17,6 +17,9 @@ router.patch("/:id", verifyIsUserEmployee, Post_internalController.updatePost);
 
 router.patch("/like/:id", verifyIsUserEmployee, Post_internalController.likeUnlikePost);
 router.patch("/:postId/comment/:commentId/like", verifyIsUserEmployee, Post_internalController.likeUnlikeComment);
+router.get("/post-stats/most-liked", Post_internalController.getPostWithMostLikes);
+router.get("/post-stats/most-commented", Post_internalController.getPostWithMostComments);
+
 router.post("/comment/:id", verifyIsUserEmployee, Post_internalController.commentOnPost);
 
 module.exports = router;

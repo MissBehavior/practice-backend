@@ -6,31 +6,6 @@ const createError = require("http-errors");
 const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_KEY);
 
 module.exports = {
-  // getPosts: async (req, res, next) => {
-  //   const page = parseInt(req.query.page) || 1;
-  //   const limit = parseInt(req.query.limit) || 10;
-
-  //   const startIndex = (page - 1) * limit;
-  //   const total = await PostInternal.countDocuments();
-  //   try {
-  //     const posts = await PostInternal.find()
-  //     .populate("userId", "name email profileImgUrl")
-  //     .populate("comments.user", "name email profileImgUrl")
-  //     .populate("likes", "name email profileImgUrl")
-  //     .sort({ createdAt: -1 })
-  //     .skip(startIndex)
-  //     .limit(limit)
-  //     .lean();
-
-  //     res.json({
-  //       totalPages: Math.ceil(total / limit),
-  //       currentPage: page,
-  //       posts,
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // },
   getPosts: async (req, res, next) => {
     console.log("getPosts internal");
     const page = parseInt(req.query.page) || 1;
@@ -233,6 +208,32 @@ module.exports = {
     } catch (error) {
       console.log("Error in getLikedPosts controller: ", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  getPostWithMostLikes: async (req, res, next) => {
+    try {
+      const post = await PostInternal.findOne().sort({ likes: -1 }).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").lean();
+      if (!post) {
+        return res.status(404).json({ error: "No posts found" });
+      }
+
+      res.status(200).json(post);
+    } catch (error) {
+      console.error("Error in getPostWithMostLikes controller: ", error);
+      next(error);
+    }
+  },
+  getPostWithMostComments: async (req, res, next) => {
+    try {
+      const post = await PostInternal.findOne().sort({ "comments.length": -1 }).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").lean();
+      if (!post) {
+        return res.status(404).json({ error: "No posts found" });
+      }
+
+      res.status(200).json(post);
+    } catch (error) {
+      console.error("Error in getPostWithMostComments controller: ", error);
+      next(error);
     }
   },
 
