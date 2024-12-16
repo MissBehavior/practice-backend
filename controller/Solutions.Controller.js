@@ -33,37 +33,53 @@ module.exports = {
     }
   },
   createSolution: async (req, res) => {
-    console.log("UPLOADING rest api called");
+    console.log("creating solution");
     try {
-      const { titleCard, contentCard } = req.body;
-      const file = req.file;
+      const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
+      const image = req.files["image"]?.[0];
+      const contentMainImage = req.files["contentMainImg"]?.[0];
 
-      if (!file) {
-        return res.status(400).json({ error: "No file uploaded" });
+      if (!image || !contentMainImage) {
+        return res.status(400).json({ error: "Required files missing" });
       }
-
-      const fileName = `${Date.now()}-${file.originalname}`;
-      const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-        contentType: file.mimetype,
+      const cardFileName = `${Date.now()}-${image.originalname}`;
+      const { data: cardData, error: cardError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(cardFileName, image.buffer, {
+        contentType: image.mimetype,
         upsert: true,
       });
-      if (error) {
-        console.log("ERROR HAPPENED CHIRP");
-        console.log(error);
-      } else {
-        console.log("HANDLING NOW CHIRP");
-        console.log(data);
-        console.log(data.path);
+      if (cardError) {
+        console.log("Error uploading card image:", cardError);
+        return res.status(500).json({ error: "Error uploading card image" });
       }
 
-      const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-      console.log(publicUrl);
+      const cardPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(cardFileName).data.publicUrl;
+
+      const contentMainFileName = `${Date.now()}-${contentMainImage.originalname}`;
+      const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(contentMainFileName, contentMainImage.buffer, {
+        contentType: contentMainImage.mimetype,
+        upsert: true,
+      });
+
+      if (contentMainError) {
+        console.log("Error uploading content main image:", contentMainError);
+        return res.status(500).json({ error: "Error uploading content main image" });
+      }
+
+      const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(contentMainFileName).data.publicUrl;
+
       const solution = new Solutions({
         titleCard: titleCard,
+        titleCardLT: titleCardLT,
         contentCard: contentCard,
-        cardImgUrl: publicUrl,
-        cardImgPath: data.path,
+        contentCardLT: contentCardLT,
+        contentMain: contentMain,
+        contentMainLT: contentMainLT,
+        cardImgUrl: cardPublicUrl,
+        cardImgPath: cardData.path,
+        contentMainImg: contentMainPublicUrl,
+        contentMainPath: contentMainData.path,
       });
+
       const savedSolution = await solution.save();
       res.send(savedSolution);
     } catch (error) {
@@ -72,10 +88,6 @@ module.exports = {
     }
   },
   deleteSolutionById: async (req, res, next) => {
-    //   console.log("delete route");
-    //   console.log(req);
-    //   console.log(req.body);
-    //   console.log(req.params);
     // TODO: DELETE IMAGE ON SUPRABASE AS WELL
     console.log(req.body);
     try {
@@ -106,57 +118,57 @@ module.exports = {
       next(error);
     }
   },
-
-  // cardImgUrl: { type: String, required: true, default: "" },
-  // cardImgPath: { type: String, required: true, default: "" },
-  // titleCard: { type: String, required: true },
-  // contentCard: { type: String, required: true },
-  // contentMain: { type: String, required: false, default: "" },
-  // contentMainImg: { type: String, required: false, default: "" },
-  // contentMainPath: { type: String, required: false, default: "" },
-
   updateSolutionDetail: async (req, res, next) => {
-    // TODO: DELETE OLD IMAGE ON SUPRABASE AS WELL
     console.log("----");
     try {
       const { id } = req.params;
-      try {
-        const { titleCard, contentCard, contentMain, contentMainImg } = req.body;
-        const file = req.file;
+      const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
+      const file = req.file;
 
-        if (!file) {
-          return res.status(400).json({ error: "No file uploaded" });
-        }
+      const solution = await Solutions.findById(id);
+      if (!solution) {
+        return res.status(404).json({ error: "Solution not found" });
+      }
 
+      if (file) {
         const fileName = `${Date.now()}-${file.originalname}`;
         const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
           contentType: file.mimetype,
           upsert: true,
         });
+
         if (error) {
-          console.log("ERROR HAPPENED CHIRP");
-          console.log(error);
-        } else {
-          console.log("HANDLING NOW CHIRP");
+          console.log("Error uploading contentMainImg:", error);
+          return res.status(500).json({ error: "Error uploading contentMainImg" });
         }
 
-        const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        console.log(publicUrl);
-        const solution = await Solutions.findById(id);
-        solution.titleCard = titleCard;
-        solution.contentMain = contentMain;
+        const publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+
+        if (solution.contentMainPath) {
+          const oldImageName = solution.contentMainPath.split("/").pop();
+          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([solution.contentMainPath]);
+
+          if (deleteError) {
+            console.error("Error deleting old contentMainImg from Supabase:", deleteError);
+          }
+        }
+
         solution.contentMainImg = publicUrl;
         solution.contentMainPath = data.path;
-
-        const savedSolution = await solution.save();
-
-        res.send(savedSolution);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Internal Server Error at PATCH" });
       }
+
+      solution.titleCard = titleCard;
+      solution.titleCardLT = titleCardLT;
+      solution.contentCard = contentCard;
+      solution.contentCardLT = contentCardLT;
+      solution.contentMain = contentMain;
+      solution.contentMainLT = contentMainLT;
+      const savedSolution = await solution.save();
+
+      res.json(savedSolution);
     } catch (error) {
-      next(error);
+      console.error("Error in updateSolutionDetail:", error);
+      res.status(500).json({ error: "Internal Server Error at PATCH /detail/:id" });
     }
   },
 
@@ -164,43 +176,77 @@ module.exports = {
     console.log("UpdateSolution CALLED");
     try {
       const { id } = req.params;
-      const { titleCard, contentCard, cardImgUrl } = req.body; // Get existing image URL from body
-      const file = req.file;
+      const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
+      const files = req.files;
 
-      // Find the existing solution
       const solution = await Solutions.findById(id);
       if (!solution) {
         return res.status(404).json({ error: "Solution not found" });
       }
-      let publicUrl = cardImgUrl;
-      if (file) {
+
+      if (files && files.image && files.image[0]) {
+        const file = files.image[0];
         const fileName = `${Date.now()}-${file.originalname}`;
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+
+        const { data: cardData, error: cardError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
           contentType: file.mimetype,
           upsert: true,
         });
-        if (error) {
-          console.error("Supabase upload error:", error);
+
+        if (cardError) {
+          console.error("Supabase upload error (image):", cardError);
           return res.status(500).json({ error: "Image upload failed" });
         }
-        publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
 
-        const oldImagePath = solution.cardImgUrl.split("/").pop(); // Extract the filename from the URL
-        const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldImagePath]);
-        if (deleteError) {
-          console.error("Error deleting old image from Supabase:", deleteError);
+        const cardPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+
+        if (solution.cardImgPath) {
+          const oldImagePath = solution.cardImgPath;
+          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldImagePath]);
+
+          if (deleteError) {
+            console.error("Error deleting old image from Supabase:", deleteError);
+          }
         }
+
+        solution.cardImgUrl = cardPublicUrl;
+        solution.cardImgPath = cardData.path;
       }
+      if (files && files.contentMainImg && files.contentMainImg[0]) {
+        const file = files.contentMainImg[0];
+        const fileName = `${Date.now()}-${file.originalname}`;
+        const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true,
+        });
 
-      solution.titleCard = titleCard;
-      solution.contentCard = contentCard;
-      solution.cardImgUrl = publicUrl;
+        if (contentMainError) {
+          console.error("Supabase upload error (contentMainImg):", contentMainError);
+          return res.status(500).json({ error: "Content Main Image upload failed" });
+        }
 
+        const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+        if (solution.contentMainPath) {
+          const oldContentMainPath = solution.contentMainPath;
+          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldContentMainPath]);
+          if (deleteError) {
+            console.error("Error deleting old contentMainImg from Supabase:", deleteError);
+          }
+        }
+        solution.contentMainImg = contentMainPublicUrl;
+        solution.contentMainPath = contentMainData.path;
+      }
+      if (titleCard !== undefined) solution.titleCard = titleCard;
+      if (titleCardLT !== undefined) solution.titleCardLT = titleCardLT;
+      if (contentCard !== undefined) solution.contentCard = contentCard;
+      if (contentCardLT !== undefined) solution.contentCardLT = contentCardLT;
+      if (contentMain !== undefined) solution.contentMain = contentMain;
+      if (contentMainLT !== undefined) solution.contentMainLT = contentMainLT;
       const savedSolution = await solution.save();
-      res.send(savedSolution);
+      res.json(savedSolution);
     } catch (error) {
       console.error("Error updating solution:", error);
-      res.status(500).json({ error: "Internal Server Error at PATCH" });
+      res.status(500).json({ error: "Internal Server Error at PATCH /:id" });
     }
   },
 };

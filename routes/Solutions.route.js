@@ -10,11 +10,26 @@ router.get("/", SolutionsController.getSolutions);
 
 router.get("/:id", SolutionsController.getSolutionsById);
 
-router.post("/api/upload/", upload.single("image"), SolutionsController.createSolution);
+router.post(
+  "/api/upload/",
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "contentMainImg", maxCount: 1 },
+  ]),
+  SolutionsController.createSolution
+);
 
 router.delete("/:id", verifyAccessToken, SolutionsController.deleteSolutionById);
 
-router.patch("/:id", verifyAccessToken, upload.single("image"), SolutionsController.updateSolution);
-router.patch("/detail/:id", verifyAccessToken, upload.single("image"), SolutionsController.updateSolutionDetail);
+router.patch(
+  "/:id",
+  verifyAccessToken,
+  upload.fields([
+    { name: "image", maxCount: 1 },
+    { name: "contentMainImg", maxCount: 1 },
+  ]),
+  SolutionsController.updateSolution
+);
+router.patch("/detail/:id", verifyAccessToken, upload.single("contentMainImg"), SolutionsController.updateSolutionDetail);
 
 module.exports = router;

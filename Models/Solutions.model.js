@@ -6,10 +6,13 @@ const SolutionsSchema = new Schema(
     cardImgUrl: { type: String, required: true, default: "" },
     cardImgPath: { type: String, required: true, default: "" },
     titleCard: { type: String, required: true },
+    titleCardLT: { type: String, required: true },
     contentCard: { type: String, required: true },
-    contentMain: { type: String, required: false, default: "" },
-    contentMainImg: { type: String, required: false, default: "" },
-    contentMainPath: { type: String, required: false, default: "" },
+    contentCardLT: { type: String, required: true },
+    contentMain: { type: String, required: true },
+    contentMainLT: { type: String, required: true },
+    contentMainImg: { type: String, required: true, default: "" },
+    contentMainPath: { type: String, required: true, default: "" },
   },
   { timestamps: true }
 );
