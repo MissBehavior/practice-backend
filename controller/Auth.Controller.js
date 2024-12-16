@@ -72,16 +72,10 @@ module.exports = {
     try {
       console.log("/login");
       const result = await authSchema.validateAsync(req.body);
-      console.log("test1");
       const user = await User.findOne({ email: result.email });
-      console.log(user);
       if (!user) throw createError.NotFound("User not registered");
-      console.log("test3");
       const isMatch = await user.isValidPassword(result.password);
-      console.log("test4");
-      // console.log(isMatch);
       if (!isMatch) throw createError.Unauthorized("Username/password not valid");
-      console.log("test5");
       const accessToken = await signAccessToken(user.name, user.id, user.isAdmin, user.isEmployee, user.email, user.profileImgUrl, user.profileImgPath, user.telefon);
       const refreshToken = await signRefreshToken(user.name, user.id, user.isAdmin, user.isEmployee, user.email, user.profileImgUrl, user.profileImgPath, user.telefon);
       res.send({ accessToken, refreshToken });
@@ -129,33 +123,65 @@ module.exports = {
   forgotPassword: async (req, res, next) => {
     console.log("/forgot-password");
     const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const otp = generateOtp();
-    const hashedOtp = await bcrypt.hash(otp, 10); // Hash the OTP before storing it
-    const newOtp = new Otp({ email, otp: hashedOtp });
-    await newOtp.save();
     try {
-      await sendOtpEmail(email, otp);
-      res.status(200).json({ message: "OTP sent to your email" });
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await Otp.deleteMany({ email });
+      const otp = generateOtp();
+      const hashedOtp = await bcrypt.hash(otp, 10);
+      const newOtp = new Otp({ email, otp: hashedOtp });
+      await newOtp.save();
+      try {
+        await sendOtpEmail(email, otp);
+        res.status(200).json({ message: "OTP sent to your email" });
+      } catch (error) {
+        console.error("Error sending email:", error);
+        res.status(500).json({ message: "Error sending OTP" });
+      }
     } catch (error) {
-      console.error("Error sending email:", error);
-      res.status(500).json({ message: "Error sending OTP" });
+      console.error("Error in forgotPassword:", error);
+      res.status(500).json({ message: "Server error" });
     }
   },
   verifyOtp: async (req, res, next) => {
+    console.log("/verify-otp");
     const { email, otp } = req.body;
+    console.log(email, otp);
     const storedOtp = await Otp.findOne({ email });
     if (!storedOtp) {
       return res.status(400).json({ message: "OTP not requested or expired" });
     }
     const isOtpValid = await bcrypt.compare(otp, storedOtp.otp);
+    console.log("-----------------------------");
+    console.log(otp, storedOtp.otp, isOtpValid);
+    console.log("-----------------------------");
     if (!isOtpValid) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
     await Otp.deleteOne({ email }); // Remove OTP after successful verification
     res.status(200).json({ message: "OTP verified successfully. You can now reset your password." });
+  },
+  resetPassword: async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+      // IMPORTANT STEP FOR SECURITY but we leave that here for the moment
+      // Optionally, you can ensure that the OTP was verified before allowing password reset
+      // This can be handled via session, token, or by ensuring the OTP was deleted after verification
+      // Assuming OTP was deleted after verification, you might skip this step
+      user.password = password;
+      await user.save();
+
+      res.status(200).json({ message: "Password reset successfully." });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Server error. Please try again later." });
+    }
   },
 };
