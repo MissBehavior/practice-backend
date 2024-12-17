@@ -107,36 +107,53 @@ module.exports = {
   updatePost: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { title, content, userName, userId } = req.body;
+      const { title, content, imageUrl } = req.body;
       const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ error: "No file uploaded" });
+      if (!title || !content) {
+        return res.status(400).json({ error: "Title and content are required." });
       }
-
-      const fileName = `${Date.now()}-${file.originalname}`;
-      const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
-      });
-      if (error) {
-        console.error("Error uploading to Supabase:", error);
-      }
-      const publicUrl = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
       const post = await PostInternal.findById(id);
       if (!post) {
-        return res.status(404).json({ error: "Post not found" });
+        return res.status(404).json({ error: "Post not found." });
       }
       post.title = title;
       post.content = content;
-      post.postPicture = publicUrl;
-      post.userName = userName;
-      post.userId = userId;
-      post.postPath = data.path;
+      if (file) {
+        const fileName = `${Date.now()}-${file.originalname}`;
+        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true,
+        });
+        if (error) {
+          console.error("Error uploading to Supabase:", error);
+          return res.status(500).json({ error: "Error uploading image." });
+        }
+        const { data: publicData, error: publicError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName);
+        if (publicError) {
+          console.error("Error fetching public URL:", publicError);
+          return res.status(500).json({ error: "Error fetching image URL." });
+        }
+        const publicUrl = publicData.publicUrl;
+        if (post.postPath) {
+          const oldImagePath = post.postPath;
+          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldImagePath]);
+          if (deleteError) {
+            console.error("Error deleting old image from Supabase:", deleteError);
+          }
+        }
+
+        post.postPicture = publicUrl;
+        post.postPath = data.path;
+      } else if (imageUrl) {
+        post.postPicture = imageUrl;
+      }
+
       await post.save();
+
       const populatedPost = await PostInternal.findById(post._id).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
 
-      res.send(populatedPost);
+      // Respond with the updated post
+      res.status(200).json(populatedPost);
     } catch (error) {
       console.error("Error updating post:", error);
       next(error);
@@ -212,7 +229,7 @@ module.exports = {
   },
   getPostWithMostLikes: async (req, res, next) => {
     try {
-      const post = await PostInternal.findOne().sort({ likes: -1 }).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").lean();
+      const post = await PostInternal.findOne().sort({ likes: -1 }).populate("userId", "name email profileImgUrl").lean();
       if (!post) {
         return res.status(404).json({ error: "No posts found" });
       }
@@ -225,10 +242,20 @@ module.exports = {
   },
   getPostWithMostComments: async (req, res, next) => {
     try {
-      const post = await PostInternal.findOne().sort({ "comments.length": -1 }).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").lean();
-      if (!post) {
+      const posts = await PostInternal.aggregate([
+        {
+          $addFields: {
+            commentsCount: { $size: "$comments" },
+          },
+        },
+        { $sort: { commentsCount: -1 } },
+        { $limit: 1 },
+      ]);
+
+      if (posts.length === 0) {
         return res.status(404).json({ error: "No posts found" });
       }
+      const post = await PostInternal.findById(posts[0]._id).populate("userId", "name email profileImgUrl").lean();
 
       res.status(200).json(post);
     } catch (error) {

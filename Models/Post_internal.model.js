@@ -13,7 +13,7 @@ const CommentSchema = new Schema(
     },
     likes: [
       {
-        type: mongoose.Schema.Types.String,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
     ],
@@ -27,7 +27,7 @@ const PostInternalSchema = new Schema(
     postPicture: { type: String, required: false, default: "" },
     postPath: { type: String, required: false, default: "" },
     userId: {
-      type: mongoose.Schema.Types.String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
     },

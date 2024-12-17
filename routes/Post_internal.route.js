@@ -13,7 +13,7 @@ router.post("/", verifyIsUserEmployee, upload.single("image"), Post_internalCont
 
 router.delete("/:id", verifyIsUserEmployee, Post_internalController.deletePostById);
 
-router.patch("/:id", verifyIsUserEmployee, Post_internalController.updatePost);
+router.patch("/:id", verifyIsUserEmployee, upload.single("image"), Post_internalController.updatePost);
 
 router.patch("/like/:id", verifyIsUserEmployee, Post_internalController.likeUnlikePost);
 router.patch("/:postId/comment/:commentId/like", verifyIsUserEmployee, Post_internalController.likeUnlikeComment);
