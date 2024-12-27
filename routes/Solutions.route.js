@@ -14,7 +14,7 @@ router.post(
   "/api/upload/",
   upload.fields([
     { name: "image", maxCount: 1 },
-    { name: "contentMainImg", maxCount: 1 },
+    // { name: "contentMainImg", maxCount: 1 },
   ]),
   SolutionsController.createSolution
 );
@@ -26,10 +26,10 @@ router.patch(
   verifyAccessToken,
   upload.fields([
     { name: "image", maxCount: 1 },
-    { name: "contentMainImg", maxCount: 1 },
+    // { name: "contentMainImg", maxCount: 1 },
   ]),
   SolutionsController.updateSolution
 );
-router.patch("/detail/:id", verifyAccessToken, upload.single("contentMainImg"), SolutionsController.updateSolutionDetail);
+// router.patch("/detail/:id", verifyAccessToken, upload.single("contentMainImg"), SolutionsController.updateSolutionDetail);
 
 module.exports = router;

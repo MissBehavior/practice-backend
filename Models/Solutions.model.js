@@ -11,8 +11,8 @@ const SolutionsSchema = new Schema(
     contentCardLT: { type: String, required: true },
     contentMain: { type: String, required: true },
     contentMainLT: { type: String, required: true },
-    contentMainImg: { type: String, required: true, default: "" },
-    contentMainPath: { type: String, required: true, default: "" },
+    // contentMainImg: { type: String, required: true, default: "" },
+    // contentMainPath: { type: String, required: true, default: "" },
   },
   { timestamps: true }
 );

@@ -37,9 +37,10 @@ module.exports = {
     try {
       const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
       const image = req.files["image"]?.[0];
-      const contentMainImage = req.files["contentMainImg"]?.[0];
+      // const contentMainImage = req.files["contentMainImg"]?.[0];
 
-      if (!image || !contentMainImage) {
+      // if (!image || !contentMainImage) {
+      if (!image) {
         return res.status(400).json({ error: "Required files missing" });
       }
       const cardFileName = `${Date.now()}-${image.originalname}`;
@@ -54,18 +55,18 @@ module.exports = {
 
       const cardPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(cardFileName).data.publicUrl;
 
-      const contentMainFileName = `${Date.now()}-${contentMainImage.originalname}`;
-      const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(contentMainFileName, contentMainImage.buffer, {
-        contentType: contentMainImage.mimetype,
-        upsert: true,
-      });
+      // const contentMainFileName = `${Date.now()}-${contentMainImage.originalname}`;
+      // const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(contentMainFileName, contentMainImage.buffer, {
+      //   contentType: contentMainImage.mimetype,
+      //   upsert: true,
+      // });
 
-      if (contentMainError) {
-        console.log("Error uploading content main image:", contentMainError);
-        return res.status(500).json({ error: "Error uploading content main image" });
-      }
+      // if (contentMainError) {
+      //   console.log("Error uploading content main image:", contentMainError);
+      //   return res.status(500).json({ error: "Error uploading content main image" });
+      // }
 
-      const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(contentMainFileName).data.publicUrl;
+      // const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(contentMainFileName).data.publicUrl;
 
       const solution = new Solutions({
         titleCard: titleCard,
@@ -76,8 +77,8 @@ module.exports = {
         contentMainLT: contentMainLT,
         cardImgUrl: cardPublicUrl,
         cardImgPath: cardData.path,
-        contentMainImg: contentMainPublicUrl,
-        contentMainPath: contentMainData.path,
+        // contentMainImg: contentMainPublicUrl,
+        // contentMainPath: contentMainData.path,
       });
 
       const savedSolution = await solution.save();
@@ -118,59 +119,59 @@ module.exports = {
       next(error);
     }
   },
-  updateSolutionDetail: async (req, res, next) => {
-    console.log("----");
-    try {
-      const { id } = req.params;
-      const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
-      const file = req.file;
+  // updateSolutionDetail: async (req, res, next) => {
+  //   console.log("----");
+  //   try {
+  //     const { id } = req.params;
+  //     const { titleCard, titleCardLT, contentCard, contentCardLT, contentMain, contentMainLT } = req.body;
+  //     const file = req.file;
 
-      const solution = await Solutions.findById(id);
-      if (!solution) {
-        return res.status(404).json({ error: "Solution not found" });
-      }
+  //     const solution = await Solutions.findById(id);
+  //     if (!solution) {
+  //       return res.status(404).json({ error: "Solution not found" });
+  //     }
 
-      if (file) {
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: true,
-        });
+  //     if (file) {
+  //       const fileName = `${Date.now()}-${file.originalname}`;
+  //       const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+  //         contentType: file.mimetype,
+  //         upsert: true,
+  //       });
 
-        if (error) {
-          console.log("Error uploading contentMainImg:", error);
-          return res.status(500).json({ error: "Error uploading contentMainImg" });
-        }
+  //       if (error) {
+  //         console.log("Error uploading contentMainImg:", error);
+  //         return res.status(500).json({ error: "Error uploading contentMainImg" });
+  //       }
 
-        const publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+  //       const publicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
 
-        if (solution.contentMainPath) {
-          const oldImageName = solution.contentMainPath.split("/").pop();
-          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([solution.contentMainPath]);
+  //       if (solution.contentMainPath) {
+  //         const oldImageName = solution.contentMainPath.split("/").pop();
+  //         const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([solution.contentMainPath]);
 
-          if (deleteError) {
-            console.error("Error deleting old contentMainImg from Supabase:", deleteError);
-          }
-        }
+  //         if (deleteError) {
+  //           console.error("Error deleting old contentMainImg from Supabase:", deleteError);
+  //         }
+  //       }
 
-        solution.contentMainImg = publicUrl;
-        solution.contentMainPath = data.path;
-      }
+  //       solution.contentMainImg = publicUrl;
+  //       solution.contentMainPath = data.path;
+  //     }
 
-      solution.titleCard = titleCard;
-      solution.titleCardLT = titleCardLT;
-      solution.contentCard = contentCard;
-      solution.contentCardLT = contentCardLT;
-      solution.contentMain = contentMain;
-      solution.contentMainLT = contentMainLT;
-      const savedSolution = await solution.save();
+  //     solution.titleCard = titleCard;
+  //     solution.titleCardLT = titleCardLT;
+  //     solution.contentCard = contentCard;
+  //     solution.contentCardLT = contentCardLT;
+  //     solution.contentMain = contentMain;
+  //     solution.contentMainLT = contentMainLT;
+  //     const savedSolution = await solution.save();
 
-      res.json(savedSolution);
-    } catch (error) {
-      console.error("Error in updateSolutionDetail:", error);
-      res.status(500).json({ error: "Internal Server Error at PATCH /detail/:id" });
-    }
-  },
+  //     res.json(savedSolution);
+  //   } catch (error) {
+  //     console.error("Error in updateSolutionDetail:", error);
+  //     res.status(500).json({ error: "Internal Server Error at PATCH /detail/:id" });
+  //   }
+  // },
 
   updateSolution: async (req, res, next) => {
     console.log("UpdateSolution CALLED");
@@ -212,30 +213,30 @@ module.exports = {
         solution.cardImgUrl = cardPublicUrl;
         solution.cardImgPath = cardData.path;
       }
-      if (files && files.contentMainImg && files.contentMainImg[0]) {
-        const file = files.contentMainImg[0];
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: true,
-        });
+      // if (files && files.contentMainImg && files.contentMainImg[0]) {
+      //   const file = files.contentMainImg[0];
+      //   const fileName = `${Date.now()}-${file.originalname}`;
+      //   const { data: contentMainData, error: contentMainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
+      //     contentType: file.mimetype,
+      //     upsert: true,
+      //   });
 
-        if (contentMainError) {
-          console.error("Supabase upload error (contentMainImg):", contentMainError);
-          return res.status(500).json({ error: "Content Main Image upload failed" });
-        }
+      //   if (contentMainError) {
+      //     console.error("Supabase upload error (contentMainImg):", contentMainError);
+      //     return res.status(500).json({ error: "Content Main Image upload failed" });
+      //   }
 
-        const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
-        if (solution.contentMainPath) {
-          const oldContentMainPath = solution.contentMainPath;
-          const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldContentMainPath]);
-          if (deleteError) {
-            console.error("Error deleting old contentMainImg from Supabase:", deleteError);
-          }
-        }
-        solution.contentMainImg = contentMainPublicUrl;
-        solution.contentMainPath = contentMainData.path;
-      }
+      //   const contentMainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(fileName).data.publicUrl;
+      //   if (solution.contentMainPath) {
+      //     const oldContentMainPath = solution.contentMainPath;
+      //     const { error: deleteError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([oldContentMainPath]);
+      //     if (deleteError) {
+      //       console.error("Error deleting old contentMainImg from Supabase:", deleteError);
+      //     }
+      //   }
+      //   solution.contentMainImg = contentMainPublicUrl;
+      //   solution.contentMainPath = contentMainData.path;
+      // }
       if (titleCard !== undefined) solution.titleCard = titleCard;
       if (titleCardLT !== undefined) solution.titleCardLT = titleCardLT;
       if (contentCard !== undefined) solution.contentCard = contentCard;
