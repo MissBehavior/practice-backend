@@ -111,6 +111,13 @@ Authorization : Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc0FkbWluIjp0cnVl
     ]
 }
 
+#####
+GET http://localhost:3000/gallery/66f72cfd61105bf4d254a94f
+Content-Type: application/json
+
+{
+}
+
 ####### forgot password
 POST http://localhost:3000/auth/forgot-password
 Content-Type: application/json
@@ -158,6 +165,13 @@ Content-Type: application/json
 DELETE http://localhost:3000/admin/users/668abc4e41906fc2f40fdffd
 Content-Type: application/json
 
+### USER GET TEST 
+GET http://localhost:3000/user/6755a1ab14af932befad2218
+Content-Type: application/json
+
+#################### GET TASKS 
+GET http://localhost:3000/postinternal/post-stats/most-commented
+Content-Type: application/json
 
 
 #################### GET TASKS 
