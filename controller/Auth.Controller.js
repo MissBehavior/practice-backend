@@ -7,13 +7,6 @@ const Otp = require("../Models/OTP.model");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 
-// const transporter = nodemailer.createTransport({
-//   service: 'gmail', // or any other email service
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -41,22 +34,9 @@ async function sendOtpEmail(email, otp) {
 
 module.exports = {
   register: async (req, res, next) => {
-    console.log("/register");
-    console.log(req.body);
-    console.log(req.body.name);
-    console.log(req.body.email);
-    console.log(req.body.password);
     try {
-      // const [email, password, name] = [req.body.email, req.body.password, req.body.name];
       const result = await signUpSchema.validateAsync(req.body);
-      console.log(result);
-      console.log("after validate");
-      // if (!email || !password || !name) {
-      //   throw createError.BadRequest();
-      // }
       const doesExist = await User.findOne({ email: result.email });
-      console.log("/register");
-      console.log(doesExist);
       if (doesExist) throw createError.Conflict(`${result.email} is already registered`);
       const user = new User(result);
       const savedUser = await user.save();
@@ -90,13 +70,8 @@ module.exports = {
       const { refreshToken } = req.body;
       if (!refreshToken) throw createError.BadRequest();
       const { userName, userId, userIsAdmin, userIsEmployee, userEmail, userImgUrl, userImgPath, userTelefon } = await verifyRefreshToken(refreshToken);
-      // console.log("--------------------------------------------");
-      // console.log(userName, userId, userIsAdmin, userIsEmployee, userEmail, userImgUrl, userImgPath, userTelefon);
-      // console.log("--------------------------------------------");
       const accessToken = await signAccessToken(userName, userId, userIsAdmin, userIsEmployee, userEmail, userImgUrl, userImgPath, userTelefon);
       const refToken = await signRefreshToken(userName, userId, userIsAdmin, userIsEmployee, userEmail, userImgUrl, userImgPath, userTelefon);
-      // console.log("/refresh_token before send");
-      // console.table({ refreshToken, userId, accessToken, refToken });
       res.send({ accessToken: accessToken, refreshToken: refToken });
     } catch (error) {
       next(error);
@@ -160,7 +135,7 @@ module.exports = {
     if (!isOtpValid) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    await Otp.deleteOne({ email }); // Remove OTP after successful verification
+    await Otp.deleteOne({ email });
     res.status(200).json({ message: "OTP verified successfully. You can now reset your password." });
   },
   resetPassword: async (req, res) => {

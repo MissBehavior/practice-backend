@@ -9,22 +9,15 @@ const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_K
 
 module.exports = {
   getPosts: async (req, res, next) => {
-    console.log("getposts called");
+    console.log("/getPosts");
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
 
       const startIndex = (page - 1) * limit;
       const total = await Post.countDocuments();
-
       // Fetch all posts with category and userId populated
-      const posts = await Post.find()
-        .populate("categories")
-        .populate("userId", "name email profileImgUrl") // Populate userId with specific fields
-        .sort({ createdAt: -1 })
-        .skip(startIndex)
-        .limit(limit)
-        .lean();
+      const posts = await Post.find().populate("categories").populate("userId", "name email profileImgUrl").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
 
       // Fetch the latest post
       const latestPost = await Post.findOne().populate("categories").populate("userId", "name email profileImgUrl").sort({ createdAt: -1 }).lean();
@@ -65,17 +58,14 @@ module.exports = {
   },
 
   getPostsByCategory: async (req, res, next) => {
-    console.log("getPostsByCategory called");
+    console.log("/getPostsByCategory");
     try {
       const { categoryId } = req.params;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
-
       const startIndex = (page - 1) * limit;
       const total = await Post.countDocuments({ categories: categoryId });
-
       const posts = await Post.find({ categories: categoryId }).populate("categories").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
-
       res.json({
         totalPages: Math.ceil(total / limit),
         currentPage: page,
@@ -87,11 +77,10 @@ module.exports = {
   },
 
   createPost: async (req, res, next) => {
-    console.log("Create postPublic called");
+    console.log("/createPost");
     try {
       let { title, titleLT, content, contentLT, userId, categories } = req.body;
       const file = req.file;
-
       // Ensure categories is always an array
       if (typeof categories === "string") {
         // Attempt to parse it as JSON first
@@ -143,10 +132,6 @@ module.exports = {
       }
       const publicUrlData = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(uploadData.path);
       const publicUrl = publicUrlData.data.publicUrl;
-
-      console.log("-------------------------------");
-      console.log(title, titleLT, content, contentLT, publicUrl, userId);
-      console.log("-------------------------------");
       const user = await User.findById(userId);
       if (!user) {
         throw createError.NotFound("User not found");
@@ -171,7 +156,7 @@ module.exports = {
   },
 
   deletePostById: async (req, res, next) => {
-    console.log("DELETE POST CALLED");
+    console.log("/deletePostById");
     try {
       const { id } = req.params;
       const deleted = await Post.findByIdAndDelete(id);
@@ -181,9 +166,6 @@ module.exports = {
 
       if (deleted.postPath) {
         const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove(deleted.postPath);
-        console.log(data);
-        console.log(error);
-        console.log("DELETED postimg ");
         if (error) {
           console.log("delete error");
           console.log(error);
@@ -196,26 +178,22 @@ module.exports = {
     }
   },
   updatePost: async (req, res, next) => {
-    console.log("UPDATE POST CALLED");
+    console.log("/updatePost");
     try {
       const { id } = req.params;
       const { title, titleLT, content, userId, categories, contentLT } = req.body;
       const file = req.file;
-
       const post = await Post.findById(id);
       if (!post) {
         throw createError.NotFound("Post not found");
       }
-
       const user = await User.findById(userId);
       if (!user) {
         throw createError.NotFound("User not found");
       }
-
       if (categories && (!Array.isArray(categories) || categories.length === 0)) {
         return res.status(400).json({ error: "At least one category must be selected" });
       }
-
       if (categories) {
         const categoryIds = [];
         for (const cat of categories) {
@@ -237,27 +215,22 @@ module.exports = {
         }
         post.categories = categoryIds;
       }
-
       if (file) {
         const fileName = `${Date.now()}-${file.originalname}`;
         const { data: uploadData, error: uploadError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(fileName, file.buffer, {
           contentType: file.mimetype,
           upsert: true,
         });
-
         if (uploadError) {
           console.error("Image upload failed:", uploadError);
           return res.status(500).json({ error: "Image upload failed" });
         }
-
         const publicUrlData = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(uploadData.path);
         const publicUrl = publicUrlData.data.publicUrl;
-
         // Remove old image if present
         if (post.postPath) {
           await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove([post.postPath]);
         }
-
         post.postPicture = publicUrl;
         post.postPath = uploadData.path;
       }
@@ -267,55 +240,26 @@ module.exports = {
       if (content) post.content = content;
       if (contentLT) post.contentLT = contentLT;
       if (userId) post.userId = userId;
-
       const savedPost = await post.save();
-
       res.status(200).json(savedPost);
     } catch (error) {
       console.error("Error updating post:", error);
       next(error);
     }
   },
-  // getPostById: async (req, res, next) => {
-  //   console.log("GET POST BY ID CALLED");
-  //   try {
-  //     const { id } = req.params;
 
-  //     // Validate the ID format (assuming MongoDB ObjectId)
-  //     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-  //       return next(createError(400, "Invalid post ID format"));
-  //     }
-
-  //     // Find the post by ID and populate categories and userId
-  //     const post = await Post.findById(id).populate("categories").populate("userId", "name email profileImgUrl").lean();
-
-  //     if (!post) {
-  //       return next(createError(404, "Post not found"));
-  //     }
-
-  //     res.json(post);
-  //   } catch (error) {
-  //     console.error("Error fetching post by ID:", error);
-  //     next(createError(500, "Internal Server Error"));
-  //   }
-  // },
   getPostById: async (req, res, next) => {
-    console.log("GET POST BY ID CALLED");
+    console.log("/getPostById");
     try {
       const { id } = req.params;
-
       if (!id.match(/^[0-9a-fA-F]{24}$/)) {
         return next(createError(400, "Invalid post ID format"));
       }
-
       const post = await Post.findById(id).populate("categories").populate("userId", "name email profileImgUrl").lean();
-
       if (!post) {
         return next(createError(404, "Post not found"));
       }
-
       const randomPosts = await Post.aggregate([{ $match: { _id: { $ne: post._id } } }, { $sample: { size: 3 } }]);
-
       res.json({
         post,
         randomPosts,

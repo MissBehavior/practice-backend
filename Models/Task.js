@@ -27,7 +27,7 @@ const TaskSchema = new Schema(
     assignee: [
       {
         type: Schema.Types.ObjectId,
-        ref: "user", // Assuming you have a User model
+        ref: "user",
       },
     ],
     stage: {

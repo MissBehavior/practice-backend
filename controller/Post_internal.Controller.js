@@ -7,21 +7,18 @@ const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_K
 
 module.exports = {
   getPosts: async (req, res, next) => {
-    console.log("getPosts internal");
+    console.log("/getPosts");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const query = req.query.query || "";
-
     const filter = {};
     if (query) {
       filter.$or = [{ title: { $regex: query, $options: "i" } }, { content: { $regex: query, $options: "i" } }, { userName: { $regex: query, $options: "i" } }];
     }
-
     const startIndex = (page - 1) * limit;
     try {
       const total = await PostInternal.countDocuments(filter);
       const posts = await PostInternal.find(filter).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").sort({ createdAt: -1 }).skip(startIndex).limit(limit).lean();
-
       res.json({
         totalPages: Math.ceil(total / limit),
         currentPage: page,
@@ -33,6 +30,7 @@ module.exports = {
   },
 
   getPostById: async (req, res, next) => {
+    console.log("/getPostById");
     const { id } = req.params;
     try {
       const post = await PostInternal.findById(id).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
@@ -47,6 +45,7 @@ module.exports = {
   },
 
   createPost: async (req, res, next) => {
+    console.log("/createPost");
     try {
       const { title, content, userName, userId } = req.body;
       const file = req.file;
@@ -85,6 +84,7 @@ module.exports = {
   },
 
   deletePostById: async (req, res, next) => {
+    console.log("/deletePostById");
     try {
       const { id } = req.params;
       const deleted = await PostInternal.findByIdAndDelete(id);
@@ -105,6 +105,7 @@ module.exports = {
   },
 
   updatePost: async (req, res, next) => {
+    console.log("/updatePost");
     try {
       const { id } = req.params;
       const { title, content, imageUrl } = req.body;
@@ -161,6 +162,7 @@ module.exports = {
   },
 
   likeUnlikePost: async (req, res) => {
+    console.log("/likeUnlikePost");
     try {
       const { userId } = req.body;
       const { id: postId } = req.params;
@@ -183,24 +185,21 @@ module.exports = {
   },
 
   commentOnPost: async (req, res) => {
+    console.log("/commentOnPost");
     try {
       const { text, userId } = req.body;
       const postId = req.params.id;
       if (!text) {
         return res.status(400).json({ error: "Text field is required" });
       }
-
       const post = await PostInternal.findById(postId);
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
       }
-
       const comment = { user: userId, text };
       post.comments.push(comment);
       await post.save();
-
       const populatedPost = await PostInternal.findById(postId).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
-
       res.status(200).json(populatedPost);
     } catch (error) {
       console.log("Error in commentOnPost controller: ", error);
@@ -209,6 +208,7 @@ module.exports = {
   },
 
   getLikedPosts: async (req, res) => {
+    console.log("/getLikedPosts");
     const userId = req.params.id;
 
     try {
@@ -228,6 +228,7 @@ module.exports = {
     }
   },
   getPostWithMostLikes: async (req, res, next) => {
+    console.log("/getPostWithMostLikes");
     try {
       const post = await PostInternal.findOne().sort({ likes: -1 }).populate("userId", "name email profileImgUrl").lean();
       if (!post) {
@@ -241,6 +242,7 @@ module.exports = {
     }
   },
   getPostWithMostComments: async (req, res, next) => {
+    console.log("/getPostWithMostComments");
     try {
       const posts = await PostInternal.aggregate([
         {
@@ -265,10 +267,10 @@ module.exports = {
   },
 
   likeUnlikeComment: async (req, res) => {
+    console.log("/likeUnlikeComment");
     try {
       const { userId } = req.body;
       const { postId, commentId } = req.params;
-
       const post = await PostInternal.findById(postId);
       if (!post) {
         return res.status(404).json({ error: "Post not found" });
@@ -277,18 +279,14 @@ module.exports = {
       if (!comment) {
         return res.status(404).json({ error: "Comment not found" });
       }
-
       const userLikedComment = comment.likes.includes(userId);
       if (userLikedComment) {
         comment.likes = comment.likes.filter((likeUserId) => likeUserId !== userId);
       } else {
         comment.likes.push(userId);
       }
-
       await post.save();
-
       const populatedPost = await PostInternal.findById(postId).populate("userId", "name email profileImgUrl").populate("comments.user", "name email profileImgUrl").populate("likes", "name email profileImgUrl").populate("comments.likes", "name email profileImgUrl").lean();
-
       res.status(200).json(populatedPost);
     } catch (error) {
       console.log("Error in likeUnlikeComment controller: ", error);

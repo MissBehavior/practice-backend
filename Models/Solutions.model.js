@@ -11,8 +11,6 @@ const SolutionsSchema = new Schema(
     contentCardLT: { type: String, required: true },
     contentMain: { type: String, required: true },
     contentMainLT: { type: String, required: true },
-    // contentMainImg: { type: String, required: true, default: "" },
-    // contentMainPath: { type: String, required: true, default: "" },
   },
   { timestamps: true }
 );
@@ -34,9 +32,3 @@ SolutionsSchema.post("save", async function (error, doc, next) {
 const Solutions = mongoose.model("solutions", SolutionsSchema);
 
 module.exports = Solutions;
-
-// Public Post - > Admin
-
-// Company Post - > Admin + Registered6
-
-// Gallery - > Admin

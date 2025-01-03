@@ -1,13 +1,10 @@
-// controllers/taskController.js
-
 const Task = require("../Models/Task");
 const createError = require("http-errors");
 
 exports.createTask = async (req, res, next) => {
+  console.log("/createTask");
   try {
     const taskData = req.body;
-    console.log("TASK DATA:::::::::::::");
-    console.log(taskData);
     const task = new Task(taskData);
     const savedTask = await task.save();
     (await savedTask.populate("assignee", "name email profileImgUrl")).populate("createdBy", "name email profileImgUrl");
@@ -20,10 +17,9 @@ exports.createTask = async (req, res, next) => {
   }
 };
 
-// Get all tasks
 exports.getTasks = async (req, res, next) => {
   try {
-    console.log("Tasks fetched");
+    console.log("/getTasks");
     const tasks = await Task.find().populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
     res.json(tasks);
   } catch (error) {
@@ -34,7 +30,7 @@ exports.getTasks = async (req, res, next) => {
 // Get a task by ID
 exports.getTaskById = async (req, res, next) => {
   try {
-    console.log("Task fetched by ID");
+    console.log("/getTaskById");
     const { id } = req.params;
     const task = await Task.findById(id).populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
     if (!task) {
@@ -49,14 +45,10 @@ exports.getTaskById = async (req, res, next) => {
 // Update a task
 exports.updateTask = async (req, res, next) => {
   try {
-    console.log("Task updated");
+    console.log("/updateTask");
     const { id } = req.params;
     const taskData = req.body;
-    console.log("UPDATED TASK:::::::::::");
-    console.log(taskData);
     const updatedTask = await Task.findByIdAndUpdate(id, taskData, { new: true }).populate("assignee", "name email profileImgUrl").populate("createdBy", "name email profileImgUrl");
-    console.log("UPDATED TASK:::::::::::");
-    console.log(updatedTask);
     if (!updatedTask) {
       return res.status(404).json({ message: "Task not found" });
     }
@@ -68,7 +60,7 @@ exports.updateTask = async (req, res, next) => {
   }
 };
 exports.getTaskStats = async (req, res, next) => {
-  console.log("Task stats fetched");
+  console.log("/getTaskStats");
   try {
     const stats = await Task.aggregate([
       {
@@ -91,7 +83,7 @@ exports.getTaskStats = async (req, res, next) => {
 // Delete a task
 exports.deleteTask = async (req, res, next) => {
   try {
-    console.log("Task deleted");
+    console.log("/deleteTask");
     const { id } = req.params;
     await Task.findByIdAndDelete(id);
 

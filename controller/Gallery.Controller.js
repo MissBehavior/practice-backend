@@ -6,7 +6,7 @@ const supabase = createClient(process.env.SUPRABASE_URL, process.env.SUPRABASE_K
 
 module.exports = {
   getGallery: async (req, res, next) => {
-    const total = await Gallery.countDocuments();
+    console.log("/getGallery");
     try {
       const gallery = await Gallery.find();
       res.json({
@@ -17,6 +17,7 @@ module.exports = {
     }
   },
   getGalleryById: async (req, res, next) => {
+    console.log("/getGalleryById");
     try {
       const { id } = req.params;
       const gallery = await Gallery.findById(id);
@@ -29,16 +30,14 @@ module.exports = {
     }
   },
   createGallery: async (req, res) => {
-    console.log("UPLOADING rest api called");
+    console.log("/createGallery");
     try {
       const { title } = req.body;
       const mainFile = req.files.cardImgUrl[0];
       const additionalFiles = req.files.galleryImages;
-
       if (!mainFile) {
         return res.status(400).json({ error: "Main image not uploaded" });
       }
-
       // Upload main image
       const mainFileName = `${Date.now()}-${mainFile.originalname}`;
       const { data: mainData, error: mainError } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").upload(mainFileName, mainFile.buffer, {
@@ -50,7 +49,6 @@ module.exports = {
         return res.status(500).json({ error: mainError.message });
       }
       const mainPublicUrl = supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").getPublicUrl(mainFileName).data.publicUrl;
-
       // Upload additional images
       let galleryImages = [];
       if (additionalFiles && additionalFiles.length > 0) {
@@ -71,14 +69,12 @@ module.exports = {
           });
         }
       }
-
       const gallery = new Gallery({
         title,
         cardImgUrl: mainPublicUrl,
         cardImgPath: mainData.path,
         galleryImages,
       });
-
       const savedGallery = await gallery.save();
       res.send(savedGallery);
     } catch (error) {
@@ -87,20 +83,15 @@ module.exports = {
     }
   },
   deleteGallery: async (req, res, next) => {
+    console.log("/deleteGallery");
     try {
       const { id } = req.params;
       const deleted = await Gallery.findByIdAndDelete(id);
       if (!deleted) {
         throw createError.NotFound(`Gallery with id ${id} not found`);
       }
-      console.log("DELETED Gallery----------");
-      console.log(deleted);
       if (deleted.cardImgPath) {
-        console.log("DELETING IMAGE");
         const { data, error } = await supabase.storage.from(process.env.SUPRABASE_BUCKET_NAME || "imgstorage").remove(deleted.cardImgPath);
-        console.log(data);
-        console.log(error);
-        console.log("DELETED IMAGE) ");
 
         if (error) {
           console.log("delete error");
@@ -115,24 +106,21 @@ module.exports = {
       }
       res.send(deleted);
     } catch (error) {
-      console.log("delete error");
       console.log(error);
       next(error);
     }
   },
   updateGallery: async (req, res) => {
-    console.log("UPDATE Gallery");
+    console.log("/updateGallery");
     try {
       const { id } = req.params;
       const { title, existingCardImgUrl, existingGalleryImages } = req.body;
-
       let existingGalleryImagesArray = [];
       if (existingGalleryImages) {
         existingGalleryImagesArray = Array.isArray(existingGalleryImages) ? existingGalleryImages : [existingGalleryImages];
       }
       const mainFile = req.files.mainImg ? req.files.mainImg[0] : null;
       const additionalFiles = req.files.galleryImages || [];
-
       const gallery = await Gallery.findById(id);
       if (!gallery) {
         return res.status(404).json({ error: `Gallery with id ${id} not found` });

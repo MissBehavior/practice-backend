@@ -1,20 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const TaskController = require("../controller/Task.Controller");
-const { verifyAccessToken } = require("../helpers/jwt");
+const { verifyAccessToken, verifyIsUserEmployee } = require("../helpers/jwt");
 
 // Create a new task
-router.post("/", TaskController.createTask);
+router.post("/", verifyIsUserEmployee, TaskController.createTask);
 
 // Get all tasks
-router.get("/", TaskController.getTasks);
-router.get("/:id", TaskController.getTaskById);
+router.get("/", verifyIsUserEmployee, TaskController.getTasks);
+router.get("/:id", verifyIsUserEmployee, TaskController.getTaskById);
 
 // Update a task
-router.put("/:id", TaskController.updateTask);
+router.put("/:id", verifyIsUserEmployee, TaskController.updateTask);
 
 // Delete a task
-router.delete("/:id", TaskController.deleteTask);
+router.delete("/:id", verifyIsUserEmployee, TaskController.deleteTask);
 // TASK STATS
-router.get("/tasks/stats", TaskController.getTaskStats);
+router.get("/tasks/stats", verifyIsUserEmployee, TaskController.getTaskStats);
 module.exports = router;

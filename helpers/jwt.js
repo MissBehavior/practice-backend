@@ -92,7 +92,6 @@ module.exports = {
                 reject(createError.InternalServerError());
                 return;
               }
-              console.log(reply);
             });
           } catch (err) {
             console.error(err);

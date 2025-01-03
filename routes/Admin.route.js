@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const AdminController = require("../controller/Admin.Controller");
+const { verifyAccessToken } = require("../helpers/jwt");
 
-router.get("/users", AdminController.getUsers);
-router.get("/users/:id", AdminController.getUserById);
-router.get("/users/year/:year", AdminController.getUsersByYear);
-router.get("/users/count/all", AdminController.getUserCount);
-router.put("/users/:id", AdminController.updateUser);
-router.post("/users", AdminController.createUser);
-// router.patch("/users/:id", AdminController.updateUser);
-router.delete("/users/:id", AdminController.deleteUser);
+router.get("/users", verifyAccessToken, AdminController.getUsers);
+router.get("/users/:id", verifyAccessToken, AdminController.getUserById);
+router.get("/users/year/:year", verifyAccessToken, AdminController.getUsersByYear);
+router.get("/users/count/all", verifyAccessToken, AdminController.getUserCount);
+router.put("/users/:id", verifyAccessToken, AdminController.updateUser);
+router.post("/users", verifyAccessToken, AdminController.createUser);
+router.delete("/users/:id", verifyAccessToken, AdminController.deleteUser);
 
-router.get("/gallery/count/all", AdminController.getGalleryCount);
+router.get("/gallery/count/all", verifyAccessToken, AdminController.getGalleryCount);
 
 module.exports = router;

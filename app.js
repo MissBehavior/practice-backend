@@ -4,7 +4,6 @@ const createError = require("http-errors");
 require("dotenv").config();
 require("./helpers/init_mongodb");
 const { verifyAccessToken } = require("./helpers/jwt");
-const client = require("./helpers/init_redis");
 const cors = require("cors");
 const http = require("http"); // Import the http module
 
@@ -34,10 +33,6 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`⚡: ${socket.id} user just connected!`);
 
-  socket.on("greet", function (data) {
-    console.log(data);
-    socket.emit("respond", { hello: "Hey, Mr.Client!" });
-  });
   socket.on("disconnect", () => {
     console.log("🔥: A user disconnected");
   });

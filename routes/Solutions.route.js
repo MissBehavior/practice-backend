@@ -16,6 +16,7 @@ router.post(
     { name: "image", maxCount: 1 },
     // { name: "contentMainImg", maxCount: 1 },
   ]),
+  verifyAccessToken,
   SolutionsController.createSolution
 );
 

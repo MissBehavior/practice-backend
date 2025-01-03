@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const otpSchema = new Schema({
   email: { type: String, required: true },
   otp: { type: String, required: true }, // Will be stored as a hash
-  createdAt: { type: Date, default: Date.now, expires: process.env.OTP_EXPIRY / 1000 },
+  createdAt: { type: Date, default: Date.now, expires: process.env.OTP_EXPIRY / 1000 }, // Time to live in milliseconds for THE OTP
 });
 
 otpSchema.pre("save", async function (next) {

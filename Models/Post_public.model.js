@@ -43,9 +43,3 @@ PostSchema.post("save", async function (error, doc, next) {
 const Post = mongoose.model("post", PostSchema);
 
 module.exports = Post;
-
-// Public Post - > Admin
-
-// Company Post - > Admin + Registered6
-
-// Gallery - > Admin

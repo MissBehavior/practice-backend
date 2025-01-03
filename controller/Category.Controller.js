@@ -4,10 +4,9 @@ const createError = require("http-errors");
 
 module.exports = {
   createCategory: async (req, res, next) => {
+    console.log("/createCategory");
     try {
       const { name } = req.body;
-      console.log("Name:", name);
-
       const existingCategory = await Category.findOne({ name });
       if (existingCategory) {
         throw createError.Conflict("Category already exists");
@@ -21,6 +20,7 @@ module.exports = {
     }
   },
   getCategories: async (req, res, next) => {
+    console.log("/getCategories");
     try {
       const categories = await Category.find().sort({ name: 1 });
       res.json(categories);

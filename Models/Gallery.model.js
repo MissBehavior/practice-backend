@@ -33,9 +33,3 @@ GallerySchema.post("save", async function (error, doc, next) {
 const Gallery = mongoose.model("gallery", GallerySchema);
 
 module.exports = Gallery;
-
-// Public Post - > Admin
-
-// Company Post - > Admin + Registered6
-
-// Gallery - > Admin
