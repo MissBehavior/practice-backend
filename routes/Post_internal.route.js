@@ -21,5 +21,6 @@ router.get("/post-stats/most-liked", Post_internalController.getPostWithMostLike
 router.get("/post-stats/most-commented", Post_internalController.getPostWithMostComments);
 
 router.post("/comment/:id", verifyIsUserEmployee, Post_internalController.commentOnPost);
+router.delete("/comment/:id/:commentId", verifyIsUserEmployee, Post_internalController.deleteCommentOnPost);
 
 module.exports = router;

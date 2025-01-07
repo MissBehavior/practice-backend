@@ -206,6 +206,54 @@ module.exports = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+  deleteCommentOnPost: async (req, res, next) => {
+    console.log("/deleteCommentOnPost");
+    try {
+      const { id: postId, commentId } = req.params;
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required." });
+      }
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+      if (!postId || !commentId) {
+        return res.status(400).json({ error: "Post ID and Comment ID are required." });
+      }
+
+      const post = await PostInternal.findById(postId);
+      if (!post) {
+        return res.status(404).json({ error: "Post not found." });
+      }
+
+      if (
+        !user.isAdmin &&
+        !comment.user.equals(user._id)
+      ) {
+        return res.status(401).json({ error: "Unauthorized." });
+      }
+      const comment = post.comments.id(commentId);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found." });
+      }
+      post.comments.pull(commentId);
+      await post.save();
+      const populatedPost = await PostInternal.findById(postId)
+        .populate("userId", "name email profileImgUrl")
+        .populate("comments.user", "name email profileImgUrl")
+        .populate("likes", "name email profileImgUrl")
+        .populate("comments.likes", "name email profileImgUrl")
+        .lean();
+
+      // Respond with the Updated Post
+      res.status(200).json(populatedPost);
+    } catch (error) {
+      console.error("Error in deleteCommentOnPost controller:", error);
+      next(error);
+    }
+  },
+
 
   getLikedPosts: async (req, res) => {
     console.log("/getLikedPosts");
