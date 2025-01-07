@@ -6,8 +6,11 @@ exports.createTask = async (req, res, next) => {
   try {
     const taskData = req.body;
     const task = new Task(taskData);
-    const savedTask = await task.save();
-    (await savedTask.populate("assignee", "name email profileImgUrl")).populate("createdBy", "name email profileImgUrl");
+    let savedTask = await task.save();
+    savedTask = await savedTask.populate([
+      { path: "assignee", select: "name email profileImgUrl" },
+      { path: "createdBy", select: "name email profileImgUrl" }
+    ]);
     // Emit the new task to all connected clients via Socket.IO
     req.app.get("socketio").emit("taskCreated", savedTask);
 
