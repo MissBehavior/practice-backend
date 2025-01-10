@@ -227,13 +227,13 @@ module.exports = {
         return res.status(404).json({ error: "Post not found." });
       }
 
+      const comment = post.comments.id(commentId);
       if (
         !user.isAdmin &&
         !comment.user.equals(user._id)
       ) {
         return res.status(401).json({ error: "Unauthorized." });
       }
-      const comment = post.comments.id(commentId);
       if (!comment) {
         return res.status(404).json({ error: "Comment not found." });
       }
